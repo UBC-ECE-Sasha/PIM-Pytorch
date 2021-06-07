@@ -1,6 +1,8 @@
 #include <c10/util/irange.h>
 #include <c10d/ProcessGroupGloo.hpp>
 
+#ifdef USE_C10D_GLOO
+
 #include <c10d/GlooDeviceFactory.hpp>
 #include <chrono>
 #include <exception>
@@ -2814,3 +2816,5 @@ uint64_t ProcessGroupGloo::getSequenceNumberForGroup() {
 }
 
 } // namespace c10d
+
+#endif // USE_C10D_GLOO

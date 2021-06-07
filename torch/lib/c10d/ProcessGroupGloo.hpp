@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef USE_C10D_GLOO
+
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -48,7 +50,7 @@ constexpr const char* GLOO_BACKEND_NAME = "gloo";
 // number can be automatically tuned, but only if we let a single
 // process take charge, and have it broadcast the limits.
 //
-class ProcessGroupGloo : public ProcessGroup {
+class TORCH_API ProcessGroupGloo : public ProcessGroup {
  public:
   // AsyncWork is the Gloo specific superclass for asynchronous work items.
   // We can split asynchronous work into 3 phases:
@@ -357,3 +359,5 @@ class ProcessGroupGloo : public ProcessGroup {
 };
 
 } // namespace c10d
+
+#endif // USE_C10D_GLOO
