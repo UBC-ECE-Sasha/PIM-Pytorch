@@ -2,8 +2,8 @@
 #include <mram.h>
 #include <stdint.h>
 
-__mram uint64_t table_no;
-__mram uint64_t placeholder;
+__host uint64_t table_no;
+__host uint64_t placeholder;
 
 int main() {
     printf("STARTING DPU\n");

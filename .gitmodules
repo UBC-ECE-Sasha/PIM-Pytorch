@@ -136,3 +136,6 @@
 [submodule "third_party/kineto"]
     path = third_party/kineto
     url = https://github.com/pytorch/kineto
+[submodule "upmem/PIM-common"]
+	path = upmem/PIM-common
+	url = https://github.com/UBC-ECE-Sasha/PIM-common.git

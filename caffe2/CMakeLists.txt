@@ -797,24 +797,11 @@ torch_compile_options(torch_cpu)  # see cmake/public/utils.cmake
 
 # NOTE: UPMEM Stuff
 set(UPMEM_HOME $ENV{UPMEM_HOME})
-# include(${UPMEM_HOME}/share/upmem/cmake/include/host/DpuHost.cmake)
-# set(DPU_PROJECT_RELATIVE_PATH ../upmem)
-# set(DPU_BINARY_NAME dpu_task)
-# set(NR_TASKLETS 2)
-# # link_directories("${UPMEM_HOME}/lib")
-find_library(UPMEM_LIB NAMES dpu HINTS /mnt/scratch3/justin/upmem-sdk/upmem-2021.3.0-Linux-x86_64/lib)
+find_library(UPMEM_LIB NAMES dpu dpu_log.h dpu_log dpu.h HINTS /mnt/scratch3/justin/upmem-sdk/upmem-2021.3.0-Linux-x86_64/lib)
 
 target_include_directories(torch_cpu PUBLIC "${UPMEM_HOME}/include/dpu")
 target_link_libraries(torch_cpu PUBLIC "${UPMEM_LIB}")
 
-# ExternalProject_Add(
-#         ${DPU_BINARY_NAME}
-#         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${DPU_PROJECT_RELATIVE_PATH}
-#         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${DPU_PROJECT_RELATIVE_PATH}
-#         CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${UPMEM_HOME}/share/upmem/cmake/dpu.cmake -DUPMEM_HOME=${UPMEM_HOME} -DNR_TASKLETS=${NR_TASKLETS}
-#         BUILD_ALWAYS TRUE
-#         INSTALL_COMMAND ""
-# )
 
 if(CMAKE_COMPILER_IS_GNUCXX AND BUILD_LIBTORCH_CPU_WITH_DEBUG)
   # To enable debug fission we need to build libtorch_cpu with debug info on,

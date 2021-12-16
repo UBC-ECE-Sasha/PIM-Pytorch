@@ -30,6 +30,8 @@ endif()
 
 set(CMAKE_INSTALL_MESSAGE NEVER)
 
+set(EXCLUDE_DIR "./upmem/")
+
 # check and set CMAKE_CXX_STANDARD
 string(FIND "${CMAKE_CXX_FLAGS}" "-std=c++" env_cxx_standard)
 if(env_cxx_standard GREATER -1)
@@ -837,10 +839,6 @@ if(USE_CPP_CODE_COVERAGE)
 
 endif()
 
-# NOTE: UPMEM C_FLAGS
-#string(APPEND CMAKE_C_FLAGS " - -DNR_TASKLETS=${NR_TASKLETS} -DDPU_BINARY=\\\"${CMAKE_CURRENT_BINARY_DIR}/${DPU_PROJECT_RELATIVE_PATH}/${DPU_BINARY_NAME}\\\"")
-#string(APPEND CMAKE_CXX_FLAGS " -ldpu")
-
 if(APPLE)
     if(USE_MLCOMPUTE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MLCOMPUTE -fobjc-arc -framework MLCompute -framework Metal")
@@ -864,7 +862,6 @@ if(ANDROID AND (NOT ANDROID_DEBUG_SYMBOLS))
     string(APPEND CMAKE_CXX_FLAGS " -s")
   elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     string(APPEND CMAKE_CXX_FLAGS " -g0")
-    # -I/mnt/scratch3/justin/upmem-sdk/upmem-2021.3.0-Linux-x86_64/include/dpu -L/mnt/scratch3/justin/upmem-sdk/upmem-2021.3.0-Linux-x86_64/lib -ldpu
   else()
     string(APPEND CMAKE_EXE_LINKER_FLAGS " -s")
   endif()
@@ -873,6 +870,9 @@ endif()
 if(NOT APPLE AND UNIX)
   list(APPEND Caffe2_DEPENDENCY_LIBS dl)
 endif()
+
+# Attempt to prefix UPMEM headers here
+include_directories(BEFORE /mnt/scratch3/justin/upmem-sdk/upmem-2021.3.0-Linux-x86_64/include/dpu)
 
 # Prefix path to Caffe2 headers.
 # If a directory containing installed Caffe2 headers was inadvertently

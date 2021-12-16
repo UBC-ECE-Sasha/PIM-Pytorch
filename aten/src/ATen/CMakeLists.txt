@@ -63,7 +63,7 @@ file(GLOB miopen_cpp "miopen/*.cpp")
 file(GLOB mkl_cpp "mkl/*.cpp")
 file(GLOB mkldnn_cpp "mkldnn/*.cpp")
 
-file(GLOB native_cpp "native/*.cpp")
+file(GLOB native_cpp "native/*.cpp")  # "../../../upmem/src/emb_host.c"
 file(GLOB native_mkl_cpp "native/mkl/*.cpp")
 file(GLOB native_mkldnn_cpp "native/mkldnn/*.cpp")
 file(GLOB vulkan_cpp "vulkan/*.cpp")
@@ -88,7 +88,7 @@ file(GLOB native_sparse_cpp "native/sparse/*.cpp")
 file(GLOB native_quantized_cpp
             "native/quantized/*.cpp"
             "native/quantized/cpu/*.cpp")
-file(GLOB native_h "native/*.h")
+file(GLOB native_h "native/*.h") #"../../../upmem/include/host/include/host.h" "../../../upmem/include/common/include/common.h" "../../../upmem/include/emb_types.h" "../../../upmem/PIM-common/common/include/common.h" "../../../upmem/PIM-common/host/include/host.h"
 file(GLOB native_ao_sparse_h
             "native/ao_sparse/*.h"
             "native/ao_sparse/cpu/*.h"

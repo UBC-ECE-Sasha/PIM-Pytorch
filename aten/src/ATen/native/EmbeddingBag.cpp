@@ -30,12 +30,18 @@
 #include <condition_variable>
 #include <ATen/Parallel.h>
 
-// For hosting DPUs
+#include <experimental/filesystem>
+#include <unistd.h>
+#include <string>
+
+// PIM: include lookup
+extern "C" {
+  #include "../../../../upmem/src/emb_host.c"
+}
 #include <dpu>
-#include <iomanip>
-#include <stdexcept>
 using namespace dpu;
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 namespace {
   const int MODE_SUM = 0;
@@ -715,34 +721,16 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
   return std::make_tuple(std::move(output), std::move(offset2bag), std::move(bag_size), std::move(max_indices));
 }
 
-// void standard_threading_test(int num, dpu::DpuSet* dpu) {
-//   // wait for main
-//   // std::unique_lock<std::mutex> lk(m);
-//   // thread_test_cv.wait(lk, []{return ready;});
-
-//   std::cout << "TRIAL: std_threading_test: " << num << " - START\n";
-//     // PIM-NOTE: UPMEM DPU HOST TEST
-//     std::cout << "Starting DPU testing\n";
-//     dpu::DpuSetAsync asyncRank = dpu->async();
-//     // auto dpu = system.dpus()[num % 10];
-//     asyncRank.load("/mnt/scratch3/justin/DISTRIBUTED-PIM-Pytorch/upmem/dpu_task");
-//     asyncRank.call(dpu->exec(), false, true);
-//     asyncRank.log(std::cout);
-//     std::cout << "DPU testing ended\n";
-    
-//     std::cout << "TRIAL: std_threading_test: " << num << " - END\n";
+// void copyCallback(dpu::DpuSet &set, unsigned placehold) {
+//   std::vector<long> toDpu { 12345 };
+//   set.copy("placeholder", toDpu);
 // }
 
-void copyCallback(dpu::DpuSet &set, unsigned placehold) {
-  std::vector<long> toDpu { 12345 };
-  set.copy("placeholder", toDpu);
-}
-
-void execCallback(dpu::DpuSet &set, unsigned placehold) {
-  std::cout << "Starting DPU testing\n";
-  set.exec();
-  set.log(std::cout);
-}
+// void execCallback(dpu::DpuSet &set, unsigned placehold) {
+//   std::cout << "Starting DPU testing\n";
+//   set.exec();
+//   set.log(std::cout);
+// }
 
 // embedding_bag wrapper to enforce contiguity in tensors other than `weight`.
 // This is created to save extra `.contiguous()` call in backward.
@@ -753,50 +741,65 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, const int64_t table_no) {
   
-  // PIM-NOTE: THREADING TEST
-  // STD:
+  // PIM: CALL LOOKUP
+  // AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "TEST", [&]() {
+  //     uint64_t index_size = indices.numel();
+  //     auto* index_ptr = indices.data_ptr<index_t>();
+  //     uint32_t* indicies0 = (uint32_t*) index_ptr;
+  //     uint64_t offset_size = offsets.numel();
+  //     auto* offset_ptr = offsets.data_ptr<index_t>();
+  //     uint32_t* offsets0 = (uint32_t*) offset_ptr;
+
+  //     std::cout << "\n\nCheck index array:\n";
+  //     for (int i = 0; i < index_size; i++) {
+  //       std::cout << indicies0[i] << ", ";
+  //     }
+
+  //     std::cout << "\n\nCheck offset array:\n";
+  //     for (int i = 0; i < offset_size; i++) {
+  //       std::cout << offsets0[i] << ", ";
+  //     }
+
+  //     // Placeholder variables
+  //     dpu_runtime_group test_group;
+  //     dpu_runtime_interval test_interval;
+  //     test_group.in_use = 21;
+  //     test_group.length = 10;
+  //     test_interval.start.tv_nsec = test_interval.start.tv_sec = 0;
+  //     test_interval.stop.tv_nsec = test_interval.stop.tv_sec = 100;
+  //     test_group.intervals = &test_interval;
+
+  //     // FAKE EMBEDDING TABLE DATA
+  //     int32_t fake_data[32*4000] = {0};
+  //     for (int i = 0; i < 4000; i++) {
+  //       for (int j = 0; j < 32; j++) {
+  //         fake_data[i+j] = j;
+  //       }
+  //     }
+
+  //     populate_mram(0, 4000, fake_data, NULL);
+
+  //     // TEST PASSING TO LOOKUP
+  //     int32_t final_results[4000] = {0};
+  //     int32_t *lookup_ret = lookup(indicies0, offsets0, &index_size, &offset_size, final_results, &test_group);
+
+  //     // Check final result after lookup
+  //     std::cout << "\n\nCheck final_results after calling lookup\n";
+  //     for (int i = 0; i < 4000; i++) {
+  //       std::cout << final_results[i] << ", ";
+  //     }
+  // });
+
   std::cout << "TABLE_NO: " << table_no << "\n";
-  std::vector<long> toDpu { table_no };
+  std::vector<uint64_t> data { (uint64_t)table_no };
   dpu::DpuSet system = dpu::DpuSet::allocateRanks(1);
-  dpu::DpuSetAsync asyncSys = system.async();
-  system.load("/mnt/scratch3/justin/DISTRIBUTED-PIM-Pytorch/upmem/dpu_task");
-  system.copy("table_no", toDpu);
-  asyncSys.call(execCallback, true, true);
-  
-  // try {
-  //   asyncSys.call(execCallback, false, false);
-  // }
-  // catch (dpu::DpuError* err) {
-  //   std::cerr << "excetion in exec init: " << err->what() << std::endl;
-  // }
-  // catch (std::exception) {
-  //   std::cout << "UNKNOWN EXCEPTION" << std::endl;
-  // }
-  
-  // std::cout << "Entering loop" << std::endl;
-  // while (true) {
-  //   try {
-  //     asyncSys.call(copyCallback, false, false);
-  //     std::cout << "DPU Done\n";
-  //     break;
-  //   }
-  //   catch (dpu::DpuError* err) {
-  //     std::cerr << "exception: " << err->what() << std::endl;
-  //   }
-  //   catch (std::exception) {
-  //     std::cout << "UNKNOW EXCEPTION" << std::endl;
-  //   }
-  // }
-
-  std::cout << "EXEC " << table_no << " ENDED\n";
-  // std::vector<std::thread> thread_list;
-  // for (int i = 0; i < 10; i++) {
-  //   thread_list.push_back(std::thread(standard_threading_test, table_no * 10 + i, system.ranks()[i]));
-  // }
-
-  // for (int i = 0; i < 10; i++) {
-  //   thread_list[i].join();
-  // }
+  dpu::DpuSet* dpu = system.dpus()[0];
+  dpu::DpuSetAsync asyncSys = dpu->async(); std::cout << "AFTER LINE791\n"; char tmp[256]; getcwd(tmp, 256); std::cout << "CWD: " << tmp << std::endl;
+  dpu->load("../DISTRIBUTED-PIM-Pytorch/upmem/dpu_task"); std::cout << "AFTER LINE792\n";
+  dpu->copy("table_no", data); std::cout << "Copied table_no @ " << table_no << std::endl;
+  dpu->copy("placeholder", data); std::cout << "Copied placeholder\n";
+  dpu->exec();
+  dpu->log(std::cout);
   
   // See [Note: hacky wrapper removal for optional tensor]
   c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
@@ -822,8 +825,6 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
       weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
       mode, sparse, per_sample_weights, include_last_offset, padding_idx, table_no);
   }
-  std::cout << "sync\n";
-  asyncSys.sync();
   return out;
 };
 
