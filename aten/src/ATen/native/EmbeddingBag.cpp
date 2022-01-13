@@ -728,7 +728,7 @@ std::tuple<Tensor, Tensor, Tensor, Tensor>
 embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset, const int64_t table_no) {
+              bool include_last_offset, c10::optional<int64_t> padding_idx_opt, const int64_t table_no) {
   // C++ Profiling - Setup
   time_t timer;
   time(&timer);
@@ -833,6 +833,15 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   std::cout << "C++ Implementation time elasped (with 0-filled tensors): " << difftime(timer, time(NULL)) << " seconds\n";
 
   return std::make_tuple(std::move(output), std::move(offset2bag), std::move(bag_size), std::move(max_indices));
+}
+
+std::tuple<Tensor, Tensor, Tensor, Tensor>
+embedding_bag(const Tensor &weight, const Tensor &indices,
+              const Tensor &offsets, const bool scale_grad_by_freq,
+              const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
+              bool include_last_offset, const int64_t table_no) {
+  return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
+      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, table_no);
 }
 
 // Assumes all input tensors except for `weight` are contiguous.
