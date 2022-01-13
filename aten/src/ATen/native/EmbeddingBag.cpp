@@ -33,6 +33,8 @@
 #include <experimental/filesystem>
 #include <unistd.h>
 #include <string>
+#include <chrono>
+#include <ctime>
 
 // PIM: include lookup
 extern "C" {
@@ -41,6 +43,7 @@ extern "C" {
 #include <dpu>
 using namespace dpu;
 using namespace std;
+using namespace std::chrono;
 namespace fs = std::experimental::filesystem;
 
 namespace {
@@ -730,7 +733,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, const int64_t table_no) {
   // C++ Profiling - Setup
-  time_t timer;
+  high_resolution_clock::time_point timer = high_resolution_clock::now();
   time(&timer);
   
   // PIM: Call lookup
@@ -821,16 +824,18 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   // return out;
 
   // C++ Profiling - Get time for impl exec (without creating 0-filled tensors)
-  // std::cout << "C++ Implementation time elasped (without creating 0-filled tensors): " << difftime(timer, time(NULL)) << " seconds\n";
+  // duration<double, std::milli> time_span = high_resolution_clock::now() - timer;
+  // std::cout << "C++ Implementation time elasped (without creating 0-filled tensors): " << time_spam.count() << " ms\n";
 
   // Return empty tensors for now
-  Tensor output = at::empty({offsets.sizes()[0] - 1, weight.sizes()[1]}, weight.options());
+  Tensor output = at::empty({include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0], weight.sizes()[1]}, weight.options());
   Tensor offset2bag = at::empty({0}, offsets.options());
   Tensor bag_size = at::empty(offsets.sizes(), offsets.options());
   Tensor max_indices = at::empty(bag_size.sizes(), offsets.options());
 
   // C++ Profiling - Get time for impl exec
-  std::cout << "C++ Implementation time elasped (with 0-filled tensors): " << difftime(timer, time(NULL)) << " seconds\n";
+  duration<double, std::milli> time_span = high_resolution_clock::now() - timer;
+  std::cout << "C++ Implementation time elasped (with 0-filled tensors): " << time_spam.count() << " ms\n";
 
   return std::make_tuple(std::move(output), std::move(offset2bag), std::move(bag_size), std::move(max_indices));
 }
