@@ -728,7 +728,7 @@ std::tuple<Tensor, Tensor, Tensor, Tensor>
 embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset, c10::optional<int64_t> padding_idx_opt, const int64_t table_no) {
+              bool include_last_offset, const int64_t table_no) {
   // C++ Profiling - Setup
   time_t timer;
   time(&timer);
@@ -821,17 +821,45 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   // return out;
 
   // C++ Profiling - Get time for impl exec (without creating 0-filled tensors)
-  // std::cout << "C++ Implementation time elasped (without creating 0-filled tensors): " << difftime(timer, time()) << " seconds\n";
+  // std::cout << "C++ Implementation time elasped (without creating 0-filled tensors): " << difftime(timer, time(NULL)) << " seconds\n";
 
   // Return empty tensors for now
+  Tensor output = at::empty({offsets.sizes()[0] - 1, weight.sizes()[1]}, weight.options());
   Tensor offset2bag = at::empty({0}, offsets.options());
-  Tensor bag_size = Tensor bag_size = at::empty(offsets.sizes(), offsets.options());
-  Tensor max_indices = Tensor max_indices = at::empty(bag_size.sizes(), offsets.options());
+  Tensor bag_size = at::empty(offsets.sizes(), offsets.options());
+  Tensor max_indices = at::empty(bag_size.sizes(), offsets.options());
 
   // C++ Profiling - Get time for impl exec
-  std::cout << "C++ Implementation time elasped (with 0-filled tensors): " << difftime(timer, time()) << " seconds\n";
+  std::cout << "C++ Implementation time elasped (with 0-filled tensors): " << difftime(timer, time(NULL)) << " seconds\n";
 
   return std::make_tuple(std::move(output), std::move(offset2bag), std::move(bag_size), std::move(max_indices));
+}
+
+// Assumes all input tensors except for `weight` are contiguous.
+// See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
+std::tuple<Tensor, Tensor, Tensor, Tensor>
+_embedding_bag_forward_only_cpu(const Tensor &weight, const Tensor &indices,
+                  const Tensor &offsets, const bool scale_grad_by_freq,
+                  const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt, bool include_last_offset,
+                  int64_t padding_idx) {
+  // See [Note: hacky wrapper removal for optional tensor]
+  c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
+  const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
+  std::ignore = scale_grad_by_freq;
+  std::ignore = sparse;
+  // Don't have table_no in this!
+  int64_t table_no = 0;
+
+  return _embedding_bag_cpu_impl(
+      weight,
+      indices,
+      offsets,
+      mode,
+      per_sample_weights,
+      include_last_offset,
+      padding_idx,
+      /*requires_grad=*/false,
+      table_no);
 }
 
 // Assumes all input tensors except for `weight` are contiguous.
