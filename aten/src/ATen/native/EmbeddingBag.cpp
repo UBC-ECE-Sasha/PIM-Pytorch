@@ -817,6 +817,8 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
       mode, sparse, per_sample_weights, include_last_offset, padding_idx, table_no);
   }
   return out;
+
+
 };
 
 std::tuple<Tensor, Tensor, Tensor, Tensor>
