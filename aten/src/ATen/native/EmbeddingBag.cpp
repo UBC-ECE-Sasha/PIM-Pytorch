@@ -721,17 +721,6 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
   return std::make_tuple(std::move(output), std::move(offset2bag), std::move(bag_size), std::move(max_indices));
 }
 
-// void copyCallback(dpu::DpuSet &set, unsigned placehold) {
-//   std::vector<long> toDpu { 12345 };
-//   set.copy("placeholder", toDpu);
-// }
-
-// void execCallback(dpu::DpuSet &set, unsigned placehold) {
-//   std::cout << "Starting DPU testing\n";
-//   set.exec();
-//   set.log(std::cout);
-// }
-
 // embedding_bag wrapper to enforce contiguity in tensors other than `weight`.
 // This is created to save extra `.contiguous()` call in backward.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
@@ -741,55 +730,56 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, const int64_t table_no) {
   
-  // PIM: CALL LOOKUP
-  // AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "TEST", [&]() {
-  //     uint64_t index_size = indices.numel();
-  //     auto* index_ptr = indices.data_ptr<index_t>();
-  //     uint32_t* indicies0 = (uint32_t*) index_ptr;
-  //     uint64_t offset_size = offsets.numel();
-  //     auto* offset_ptr = offsets.data_ptr<index_t>();
-  //     uint32_t* offsets0 = (uint32_t*) offset_ptr;
+  // Test argument passing to lookup function
+  AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "TEST", [&]() {
+      uint64_t index_size = indices.numel();
+      auto* index_ptr = indices.data_ptr<index_t>();
+      uint32_t* indicies0 = (uint32_t*) index_ptr;
+      uint64_t offset_size = offsets.numel();
+      auto* offset_ptr = offsets.data_ptr<index_t>();
+      uint32_t* offsets0 = (uint32_t*) offset_ptr;
 
-  //     std::cout << "\n\nCheck index array:\n";
-  //     for (int i = 0; i < index_size; i++) {
-  //       std::cout << indicies0[i] << ", ";
-  //     }
+      std::cout << "\n\nCheck index array:\n";
+      for (int i = 0; i < index_size; i++) {
+        std::cout << indicies0[i] << ", ";
+      }
 
-  //     std::cout << "\n\nCheck offset array:\n";
-  //     for (int i = 0; i < offset_size; i++) {
-  //       std::cout << offsets0[i] << ", ";
-  //     }
+      std::cout << "\n\nCheck offset array:\n";
+      for (int i = 0; i < offset_size; i++) {
+        std::cout << offsets0[i] << ", ";
+      }
 
-  //     // Placeholder variables
-  //     dpu_runtime_group test_group;
-  //     dpu_runtime_interval test_interval;
-  //     test_group.in_use = 21;
-  //     test_group.length = 10;
-  //     test_interval.start.tv_nsec = test_interval.start.tv_sec = 0;
-  //     test_interval.stop.tv_nsec = test_interval.stop.tv_sec = 100;
-  //     test_group.intervals = &test_interval;
+      // Placeholder variables
+      dpu_runtime_group test_group;
+      dpu_runtime_interval test_interval;
+      test_group.in_use = 21;
+      test_group.length = 10;
+      test_interval.start.tv_nsec = test_interval.start.tv_sec = 0;
+      test_interval.stop.tv_nsec = test_interval.stop.tv_sec = 100;
+      test_group.intervals = &test_interval;
 
-  //     // FAKE EMBEDDING TABLE DATA
-  //     int32_t fake_data[32*4000] = {0};
-  //     for (int i = 0; i < 4000; i++) {
-  //       for (int j = 0; j < 32; j++) {
-  //         fake_data[i+j] = j;
-  //       }
-  //     }
+      // FAKE EMBEDDING TABLE DATA
+      int32_t fake_data[32*4000] = {0};
+      for (int i = 0; i < 4000; i++) {
+        for (int j = 0; j < 32; j++) {
+          fake_data[i+j] = j;
+        }
+      }
 
-  //     populate_mram(0, 4000, fake_data, NULL);
+      populate_mram(0, 4000, fake_data, NULL);
 
-  //     // TEST PASSING TO LOOKUP
-  //     int32_t final_results[4000] = {0};
-  //     int32_t *lookup_ret = lookup(indicies0, offsets0, &index_size, &offset_size, final_results, &test_group);
+      // TEST PASSING TO LOOKUP
+      int32_t final_results[4000] = {0};
+      int32_t *lookup_ret = lookup(indicies0, offsets0, &index_size, &offset_size, final_results, &test_group);
 
-  //     // Check final result after lookup
-  //     std::cout << "\n\nCheck final_results after calling lookup\n";
-  //     for (int i = 0; i < 4000; i++) {
-  //       std::cout << final_results[i] << ", ";
-  //     }
-  // });
+      // Check final result after lookup
+      std::cout << "\n\nCheck final_results after calling lookup\n";
+      for (int i = 0; i < 4000; i++) {
+        std::cout << final_results[i] << ", ";
+      }
+  });
 
+  // Test if DPU libraries are loaded and execution
   std::cout << "TABLE_NO: " << table_no << "\n";
   std::vector<uint64_t> data { (uint64_t)table_no };
   dpu::DpuSet system = dpu::DpuSet::allocateRanks(1);
@@ -801,6 +791,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   dpu->exec();
   dpu->log(std::cout);
   
+  // --- Original CPU implementation below ---
   // See [Note: hacky wrapper removal for optional tensor]
   c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
   const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
