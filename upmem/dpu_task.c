@@ -6,7 +6,7 @@ __host uint64_t table_no;
 __host uint64_t placeholder;
 
 int main() {
-    printf("STARTING DPU\n");
+    /* printf("STARTING DPU\n");
 
     uint64_t thread_no = table_no;
     int sum = 0;
@@ -18,6 +18,6 @@ int main() {
         if (i % 10 == 0) printf("DPU exec stage @ %lu ... %d\n", thread_no, i / 10 + 1);
     }
     
-    printf("DPU DONE\n");
+    printf("DPU DONE\n"); */
     return 0;
 }
