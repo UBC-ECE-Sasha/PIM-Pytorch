@@ -755,7 +755,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   
   // PIM-NOTE: THREADING TEST
   // STD:
-  std::cout << "TABLE_NO: " << table_no << "\n";
+  //std::cout << "TABLE_NO: " << table_no << "\n";
   std::vector<uint64_t> data { (uint64_t)table_no };
   dpu::DpuSet system = dpu::DpuSet::allocateRanks(1);
   dpu::DpuSet* dpu = system.dpus()[0];
@@ -764,7 +764,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
   dpu->copy("table_no", data); std::cout << "Copied table_no @ " << table_no << std::endl;
   dpu->copy("placeholder", data); std::cout << "Copied placeholder\n";
   dpu->exec();
-  dpu->log(std::cout);
+  //dpu->log(std::cout);
   //asyncSys.call(execCallback, false, false);
   //asyncSys.sync();
   // try {
