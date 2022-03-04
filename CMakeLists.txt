@@ -869,6 +869,9 @@ if(NOT APPLE AND UNIX)
   list(APPEND Caffe2_DEPENDENCY_LIBS dl)
 endif()
 
+# PIM: Include UPMEM SDK
+include_directories(BEFORE /home/shared/upmem-2021.1.0-Linux-x86_64+power_measure_api/include/dpu)
+
 # Prefix path to Caffe2 headers.
 # If a directory containing installed Caffe2 headers was inadvertently
 # added to the list of include directories, prefixing

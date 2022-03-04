@@ -795,6 +795,12 @@ if(HAVE_SOVERSION)
 endif()
 torch_compile_options(torch_cpu)  # see cmake/public/utils.cmake
 
+# PIM: Link with UPMEM SDK
+set(UPMEM_HOME $ENV{UPMEM_HOME})
+find_library(UPMEM_LIB NAMES dpu dpu_log.h dpu_log dpu.h HINTS /home/shared/upmem-2021.1.0-Linux-x86_64+power_measure_api/lib)
+
+target_include_directories(torch_cpu PUBLIC "${UPMEM_HOME}/include/dpu")
+target_link_libraries(torch_cpu PUBLIC "${UPMEM_LIB}")
 
 if(CMAKE_COMPILER_IS_GNUCXX AND BUILD_LIBTORCH_CPU_WITH_DEBUG)
   # To enable debug fission we need to build libtorch_cpu with debug info on,

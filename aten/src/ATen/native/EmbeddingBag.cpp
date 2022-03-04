@@ -22,6 +22,9 @@
 #include <tuple>
 #include <vector>
 
+// PIM: Include UPMEM SDK
+#include <dpu>
+using namespace dpu;
 
 namespace {
   const int MODE_SUM = 0;
