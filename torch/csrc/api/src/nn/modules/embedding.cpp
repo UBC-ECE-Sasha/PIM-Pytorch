@@ -114,20 +114,27 @@ void EmbeddingBagImpl::reset_parameters() {
   }
   torch::nn::init::normal_(weight);
 }
-
-torch::Tensor EmbeddingBagImpl::forward(const Tensor& input, const Tensor& offsets, const Tensor& per_sample_weights) {
+// PIM: Force direct lookup() call 
+// torch::Tensor EmbeddingBagImpl::forward(const Tensor& input, const Tensor& offsets, const Tensor& per_sample_weights) {
+void EmbeddingBagImpl::forward(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr) {
   return F::detail::embedding_bag(
-    input,
-    weight,
-    offsets,
-    options.max_norm(),
-    options.norm_type(),
-    options.scale_grad_by_freq(),
-    options.mode(),
-    options.sparse(),
-    per_sample_weights,
-    options.include_last_offset(),
-    options.padding_idx());
+    // PIM: Force direct lookup() call
+    // input,
+    // weight,
+    // offsets,
+    // options.max_norm(),
+    // options.norm_type(),
+    // options.scale_grad_by_freq(),
+    // options.mode(),
+    // options.sparse(),
+    // per_sample_weights,
+    // options.include_last_offset(),
+    // options.padding_idx());
+    indices_ptr,
+    offsets_ptr,
+    indices_len_ptr,
+    nr_batches_ptr,
+    final_results_ptr);
 }
 
 void EmbeddingBagImpl::pretty_print(std::ostream& stream) const {

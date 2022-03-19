@@ -116,7 +116,10 @@ class TORCH_API EmbeddingBagImpl : public torch::nn::Cloneable<EmbeddingBagImpl>
   /// The embedding table.
   Tensor weight;
 
-  Tensor forward(const Tensor& input, const Tensor& offsets = {}, const Tensor& per_sample_weights = {});
+  // PIM: Force direct lookup() call
+  // Tensor forward(const Tensor& input, const Tensor& offsets = {}, const Tensor& per_sample_weights = {});
+  void forward(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr);
+
  protected:
   FORWARD_HAS_DEFAULT_ARGS({1, AnyValue(Tensor())}, {2, AnyValue(Tensor())})
 };

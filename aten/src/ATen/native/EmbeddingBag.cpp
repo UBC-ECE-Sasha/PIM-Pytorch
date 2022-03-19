@@ -26,6 +26,10 @@
 #include <dpu>
 using namespace dpu;
 
+extern "C" {
+  #include "emb_host.c"
+}
+
 namespace {
   const int MODE_SUM = 0;
   const int MODE_MEAN = 1;
@@ -706,46 +710,55 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
 // embedding_bag wrapper to enforce contiguity in tensors other than `weight`.
 // This is created to save extra `.contiguous()` call in backward.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
-std::tuple<Tensor, Tensor, Tensor, Tensor>
-embedding_bag(const Tensor &weight, const Tensor &indices,
-              const Tensor &offsets, const bool scale_grad_by_freq,
-              const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset, c10::optional<int64_t> padding_idx_opt) {
-  // See [Note: hacky wrapper removal for optional tensor]
-  c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
-  const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
-  int64_t padding_idx = -1;
+void
+embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr) {
+  // // See [Note: hacky wrapper removal for optional tensor]
+  // c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
+  // const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
+  // int64_t padding_idx = -1;
 
-  if (padding_idx_opt.has_value()) {
-    auto num_embeddings = weight.size(0);
-    padding_idx = padding_idx_opt.value();
-    TORCH_CHECK(
-      (padding_idx >= -num_embeddings) && (padding_idx < num_embeddings),
-      "padding_idx must be within the number of embeddings, -", num_embeddings,
-      " through ", num_embeddings - 1, ", but got ", padding_idx);
-    padding_idx = maybe_wrap_dim(padding_idx, weight.size(0));
-  }
-  std::tuple<Tensor, Tensor, Tensor, Tensor> out;
-  if (!weight.requires_grad()) {
-    out = at::_embedding_bag_forward_only(
-      weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
-      mode, sparse, per_sample_weights, include_last_offset, padding_idx);
-  } else {
-    out = at::_embedding_bag(
-      weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
-      mode, sparse, per_sample_weights, include_last_offset, padding_idx);
-  }
-  return out;
+  // if (padding_idx_opt.has_value()) {
+  //   auto num_embeddings = weight.size(0);
+  //   padding_idx = padding_idx_opt.value();
+  //   TORCH_CHECK(
+  //     (padding_idx >= -num_embeddings) && (padding_idx < num_embeddings),
+  //     "padding_idx must be within the number of embeddings, -", num_embeddings,
+  //     " through ", num_embeddings - 1, ", but got ", padding_idx);
+  //   padding_idx = maybe_wrap_dim(padding_idx, weight.size(0));
+  // }
+  // std::tuple<Tensor, Tensor, Tensor, Tensor> out;
+  // if (!weight.requires_grad()) {
+  //   out = at::_embedding_bag_forward_only(
+  //     weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
+  //     mode, sparse, per_sample_weights, include_last_offset, padding_idx);
+  // } else {
+  //   out = at::_embedding_bag(
+  //     weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
+  //     mode, sparse, per_sample_weights, include_last_offset, padding_idx);
+  // }
+
+  // TODO: Change func prototype
+  // TODO: Call lookup w/ conversion macro, or via pointer
+  // lookup(indices_ptr, offsets_ptr, indices_len, nr_batches, results, table_id);
+  lookup(NULL, NULL, NULL, NULL, NULL);  // Check if buildable first
 };
 
-std::tuple<Tensor, Tensor, Tensor, Tensor>
-embedding_bag(const Tensor &weight, const Tensor &indices,
-              const Tensor &offsets, const bool scale_grad_by_freq,
-              const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset) {
-  return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
-      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt);
+// TEST
+void
+embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr) {
+  // Wrap to uint64_t
+  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr);
 }
+
+// PIM: We removed padding_idx overload, so no need for this wrapper anymore
+// std::tuple<Tensor, Tensor, Tensor, Tensor>
+// embedding_bag(const Tensor &weight, const Tensor &indices,
+//               const Tensor &offsets, const bool scale_grad_by_freq,
+//               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
+//               bool include_last_offset) {
+//   return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
+//       mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt);
+// }
 
 // Assumes all input tensors except for `weight` are contiguous.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
