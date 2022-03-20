@@ -740,7 +740,7 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   // TODO: Change func prototype
   // TODO: Call lookup w/ conversion macro, or via pointer
   // lookup(indices_ptr, offsets_ptr, indices_len, nr_batches, results, table_id);
-  lookup(NULL, NULL, NULL, NULL, NULL);  // Check if buildable first
+  lookup((uint32_t**) indices_ptr, (uint32_t**) offsets, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float **) final_results);  // Check if buildable first
 };
 
 // TEST
