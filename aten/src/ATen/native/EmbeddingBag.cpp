@@ -711,7 +711,7 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
 // This is created to save extra `.contiguous()` call in backward.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
 void
-embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr) {
+embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables) {
   // // See [Note: hacky wrapper removal for optional tensor]
   // c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
   // const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
@@ -737,17 +737,69 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   //     mode, sparse, per_sample_weights, include_last_offset, padding_idx);
   // }
 
-  // TODO: Change func prototype
-  // TODO: Call lookup w/ conversion macro, or via pointer
-  // lookup(indices_ptr, offsets_ptr, indices_len, nr_batches, results, table_id);
+  // NOTE:
+  // indices_ptr: pointer to an array of pointers, each pointer is an array of indices (uint32_t)
+  // offsets_ptr: pointer to an array of pointers, each pointer is an array of offsets (uint32_t)
+  // indices_len_ptr: pointer to an array of uint64_ts, each value represent the length of the respective index array
+  // nr_batches_ptr: pointer to an array of uint64_ts, each value represent the length of the respective offset array
+  // final_results_ptr: pointer to an array of pointers, each pointer is an array of memory space that is used to store results of the lookup
+  // num_of_tables: number of tables that needs to be processed
+
+  uint32_t** indices_ptr_typed = (uint32_t**) indices_ptr;
+  uint32_t** offsets_ptr_typed = (uint32_t**) offsets_ptr;
+  uint32_t* indices_len_ptr_typed = (uint32_t*) indices_len_ptr;
+  uint32_t* nr_batches_ptr_typed = (uint32_t*) nr_batches_ptr;
+  float** final_results_ptr_typed = (float**) final_results_ptr;
+
+  // DEBUG: Check arguments
+  std::cout << "DEBUG (C++): indices_ptr: " << indices_ptr << ", deref'd: \n";
+  for (uint64_t i = 0; i < num_of_tables; i++) {
+    std::cout << "Table " << i << ": \n[ ";
+    // Too much console pollution if the whole thing gets printed out, use first 10 to check
+    for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < indices_len_ptr_typed[i]; j++) {
+      std::cout << indices_ptr_typed[i][j] << ", ";
+    }
+    std::cout << "]\n";
+  }
+
+  std::cout << "DEBUG (C++): offsets_ptr: " << offsets_ptr << ", deref'd: \n";
+  for (uint64_t i = 0; i < num_of_tables; i++) {
+    std::cout << "Table " << i << ": \n[ ";
+    // Too much console pollution if the whole thing gets printed out, use first 10 to check
+    for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < nr_batches_ptr_typed[i]; j++) {
+      std::cout << offsets_ptr_typed[i][j] << ", ";
+    }
+    std::cout << "]\n";
+  }
+
+  std::cout << "DEBUG (C++): indices_len_ptr: " << indices_len_ptr << ", deref'd: \n [ ";
+  for (uint64_t i = 0; i < num_of_tables; i++) {
+    std::cout << indices_len_ptr_typed[i] << ", ";
+  }
+  std::cout << "]\n";
+
+  std::cout << "DEBUG (C++): nr_batches_ptr: " << nr_batches_ptr << ", deref'd: \n [ ";
+  for (uint64_t i = 0; i < num_of_tables; i++) {
+    std::cout << nr_batches_ptr_typed[i] << ", ";
+  }
+  std::cout << "]\n";
+
+  std::cout << "DEBUG (C++): final_results_ptr: " << final_results_ptr << ", deref'd: \n [ ";
+  for (uint64_t i = 0; i < num_of_tables; i++) {
+    std::cout << final_results_ptr_typed[i] << ", ";
+  }
+  std::cout << "]\n";
+
+  std::cout << "DEBUG (C++): num_of_tables: " << num_of_tables << "\n";
+
   lookup((uint32_t**) indices_ptr, (uint32_t**) offsets_ptr, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float **) final_results_ptr);  // Check if buildable first
 };
 
 // TEST
 void
-embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr) {
+embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr, int64_t num_of_tables) {
   // Wrap to uint64_t
-  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr);
+  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr, (uint64_t) num_of_tables);
 }
 
 // PIM: We removed padding_idx overload, so no need for this wrapper anymore

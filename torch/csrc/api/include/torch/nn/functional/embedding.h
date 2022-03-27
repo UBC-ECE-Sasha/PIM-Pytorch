@@ -146,13 +146,14 @@ namespace detail {
 //       include_last_offset,
 //       padding_idx));
 // }
-inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr){
+inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables){
     torch::embedding_bag(
       indices_ptr,
       offsets_ptr,
       indices_len_ptr,
       nr_batches_ptr,
-      final_results_ptr);
+      final_results_ptr,
+      num_of_tables);
 }
 } // namespace detail
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -183,13 +184,14 @@ inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t i
 //     options.include_last_offset(),
 //     options.padding_idx());
 // }
-inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr){
+inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables){
   return detail::embedding_bag(
     indices_ptr,
     offsets_ptr,
     indices_len_ptr,
     nr_batches_ptr,
-    final_results_ptr);
+    final_results_ptr,
+    num_of_tables);
 }
 
 } // namespace functional

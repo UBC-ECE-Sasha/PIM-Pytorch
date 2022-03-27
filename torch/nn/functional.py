@@ -2043,13 +2043,15 @@ def embedding(
     return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
 
 
+# PIM: Force direct lookup() call
 def embedding_bag(
     indices_ptr,
     offsets_ptr,
     indices_len_ptr,
     nr_batches_ptr,
-    final_results_ptr
-) -> ():
+    final_results_ptr,
+    num_of_tables
+):
 # def embedding_bag(
 #     input: Tensor,
 #     weight: Tensor,
@@ -2232,7 +2234,7 @@ def embedding_bag(
     #     weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx
     # )
     # return ret
-    torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr)
+    torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables)
 
 
 # embedding_bag.__doc__ = embedding_bag.__doc__.format(**reproducibility_notes)
