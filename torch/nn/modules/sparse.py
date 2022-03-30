@@ -351,7 +351,7 @@ class EmbeddingBag(Module):
 
     # PIM: Force direct lookup() call
     # def forward(self, input: Tensor, offsets: Optional[Tensor] = None, per_sample_weights: Optional[Tensor] = None) -> Tensor:
-    def forward(self, indices_ptr: int, offsets_ptr: int, indices_len_ptr: int, nr_batches_ptr: int, final_results_ptr: int, num_of_tables: int):
+    def forward(self, indices_ptr: int, offsets_ptr: int, indices_len_ptr: int, nr_batches_ptr: int, final_results_ptr: int, num_of_tables: int, dpu_set_ptr: int):
         """Forward pass of EmbeddingBag.
 
         Args:
@@ -388,7 +388,7 @@ class EmbeddingBag(Module):
         #                        self.scale_grad_by_freq, self.mode, self.sparse,
         #                        per_sample_weights, self.include_last_offset,
         #                        self.padding_idx)
-        return F.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables)
+        return F.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables, dpu_set_ptr)
 
     def extra_repr(self) -> str:
         s = '{num_embeddings}, {embedding_dim}'

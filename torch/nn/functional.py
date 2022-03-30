@@ -2050,7 +2050,8 @@ def embedding_bag(
     indices_len_ptr,
     nr_batches_ptr,
     final_results_ptr,
-    num_of_tables
+    num_of_tables,
+    dpu_set_ptr
 ):
 # def embedding_bag(
 #     input: Tensor,
@@ -2234,7 +2235,7 @@ def embedding_bag(
     #     weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx
     # )
     # return ret
-    torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables)
+    torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables, dpu_set_ptr)
 
 
 # embedding_bag.__doc__ = embedding_bag.__doc__.format(**reproducibility_notes)
