@@ -792,7 +792,7 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
 
   std::cout << "DEBUG (C++): num_of_tables: " << num_of_tables << "\n";
 
-  lookup((uint32_t**) indices_ptr, (uint32_t**) offsets_ptr, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float **) final_results_ptr);  // Check if buildable first
+  lookup((uint32_t**) indices_ptr, (uint32_t**) offsets_ptr, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float**) final_results_ptr, (void*) dpu_set_ptr);  // Check if buildable first
 };
 
 // TEST
