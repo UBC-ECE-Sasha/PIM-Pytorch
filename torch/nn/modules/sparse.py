@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
@@ -351,7 +351,7 @@ class EmbeddingBag(Module):
 
     # PIM: Force direct lookup() call
     # def forward(self, input: Tensor, offsets: Optional[Tensor] = None, per_sample_weights: Optional[Tensor] = None) -> Tensor:
-    def forward(self, indices_ptr: int, offsets_ptr: int, indices_len_ptr: int, nr_batches_ptr: int, final_results_ptr: int, num_of_tables: int, dpu_set_ptr: int):
+    def forward(self, indices_ptr: Any, offsets_ptr: Any, indices_len_ptr: int, nr_batches_ptr: int, final_results_ptr: int, num_of_tables: int, dpu_set_ptr: int):
         """Forward pass of EmbeddingBag.
 
         Args:

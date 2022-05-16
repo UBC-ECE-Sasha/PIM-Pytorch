@@ -116,7 +116,7 @@ void EmbeddingBagImpl::reset_parameters() {
 }
 // PIM: Force direct lookup() call 
 // torch::Tensor EmbeddingBagImpl::forward(const Tensor& input, const Tensor& offsets, const Tensor& per_sample_weights) {
-void EmbeddingBagImpl::forward(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr) {
+void EmbeddingBagImpl::forward(uint32_t** indices_ptr, uint32_t** offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr) {
   return F::detail::embedding_bag(
     // PIM: Force direct lookup() call
     // input,
