@@ -27,7 +27,7 @@
 using namespace dpu;
 
 extern "C" {
-  #include "emb_host.c"
+  #include "emb_host.h"
 }
 
 namespace {
@@ -752,7 +752,9 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   float** final_results_ptr_typed = (float**) final_results_ptr;
 
   // DEBUG: Check arguments
-  std::cout << "DEBUG (C++): indices_ptr: " << indices_ptr << ", deref'd: \n";
+  std::cout << "DEBUG (C++): BREAKDOWN TESTING: " << std::hex << static_cast<void*>(indices_ptr_typed) << ", " << static_cast<void*>(indices_ptr_typed[0]) << ", " << indices_ptr_typed[0][0] << std::dec << std::endl; 
+
+  std::cout << "DEBUG (C++): indices_ptr: " << std::hex << indices_ptr << std::dec << ", deref'd: \n";
   for (uint64_t i = 0; i < num_of_tables; i++) {
     std::cout << "Table " << i << ": \n[ ";
     // Too much console pollution if the whole thing gets printed out, use first 10 to check
@@ -762,7 +764,7 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
     std::cout << "]\n";
   }
 
-  std::cout << "DEBUG (C++): offsets_ptr: " << offsets_ptr << ", deref'd: \n";
+  std::cout << "DEBUG (C++): offsets_ptr: " << std::hex << offsets_ptr << std::dec << ", deref'd: \n";
   for (uint64_t i = 0; i < num_of_tables; i++) {
     std::cout << "Table " << i << ": \n[ ";
     // Too much console pollution if the whole thing gets printed out, use first 10 to check
@@ -772,19 +774,19 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
     std::cout << "]\n";
   }
 
-  std::cout << "DEBUG (C++): indices_len_ptr: " << indices_len_ptr << ", deref'd: \n [ ";
+  std::cout << "DEBUG (C++): indices_len_ptr: " << std::hex << indices_len_ptr << std::dec << ", deref'd: \n [ ";
   for (uint64_t i = 0; i < num_of_tables; i++) {
     std::cout << indices_len_ptr_typed[i] << ", ";
   }
   std::cout << "]\n";
 
-  std::cout << "DEBUG (C++): nr_batches_ptr: " << nr_batches_ptr << ", deref'd: \n [ ";
+  std::cout << "DEBUG (C++): nr_batches_ptr: " << std::hex << nr_batches_ptr << std::dec << ", deref'd: \n [ ";
   for (uint64_t i = 0; i < num_of_tables; i++) {
     std::cout << nr_batches_ptr_typed[i] << ", ";
   }
   std::cout << "]\n";
 
-  std::cout << "DEBUG (C++): final_results_ptr: " << final_results_ptr << ", deref'd: \n [ ";
+  std::cout << "DEBUG (C++): final_results_ptr: " << std::hex << final_results_ptr << std::dec << ", deref'd: \n [ ";
   for (uint64_t i = 0; i < num_of_tables; i++) {
     std::cout << final_results_ptr_typed[i] << ", ";
   }
