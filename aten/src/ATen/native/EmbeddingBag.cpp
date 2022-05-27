@@ -711,7 +711,7 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
 // This is created to save extra `.contiguous()` call in backward.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
 void
-embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr) {
+embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu) {
   // // See [Note: hacky wrapper removal for optional tensor]
   // c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
   // const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
@@ -750,6 +750,8 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   uint32_t* indices_len_ptr_typed = (uint32_t*) indices_len_ptr;
   uint32_t* nr_batches_ptr_typed = (uint32_t*) nr_batches_ptr;
   float** final_results_ptr_typed = (float**) final_results_ptr;
+  (void) lookup_mode;
+  (void) use_dpu;
 
   // DEBUG: Check arguments
   std::cout << "DEBUG (C++): BREAKDOWN TESTING: " << std::hex << static_cast<void*>(indices_ptr_typed) << ", " << static_cast<void*>(indices_ptr_typed[0]) << ", " << indices_ptr_typed[0][0] << std::dec << std::endl; 
@@ -799,9 +801,9 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
 
 // TEST
 void
-embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr, int64_t num_of_tables, int64_t dpu_set_ptr) {
+embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr, int64_t num_of_tables, int64_t dpu_set_ptr, bool lookup_mode, bool use_dpu) {
   // Wrap to uint64_t
-  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr, (uint64_t) num_of_tables, (uint64_t) dpu_set_ptr);
+  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr, (uint64_t) num_of_tables, (uint64_t) dpu_set_ptr, lookup_mode, use_dpu);
 }
 
 // PIM: We removed padding_idx overload, so no need for this wrapper anymore

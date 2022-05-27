@@ -1713,7 +1713,7 @@
 
 # PIM: Force direct lookup() call
 # - func: embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False) -> (Tensor, Tensor, Tensor, Tensor)
-- func: embedding_bag(int indices_ptr, int offsets_ptr, int indices_len_ptr, int nr_batches_ptr, int final_results_ptr, int num_of_tables, int dpu_set_ptr) -> ()
+- func: embedding_bag(int indices_ptr, int offsets_ptr, int indices_len_ptr, int nr_batches_ptr, int final_results_ptr, int num_of_tables, int dpu_set_ptr, bool lookup_mode, bool use_dpu) -> ()
 
 # To keep backward and forward compatibility, and to avoid ambiguity with the
 # original signature above, scale_grad_by_freq, mode, sparse,
