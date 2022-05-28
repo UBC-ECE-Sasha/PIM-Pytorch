@@ -754,6 +754,9 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   (void) use_dpu;
 
   // DEBUG: Check arguments
+  std::cout << "DEBUG (C++): lookup_mode: " << lookup_mode << std::endl;
+  std::cout << "DEBUG (C++): use_dpu: " << use_dpu << std::endl;
+
   std::cout << "DEBUG (C++): BREAKDOWN TESTING: " << std::hex << static_cast<void*>(indices_ptr_typed) << ", " << static_cast<void*>(indices_ptr_typed[0]) << ", " << indices_ptr_typed[0][0] << std::dec << std::endl; 
 
   std::cout << "DEBUG (C++): indices_ptr: " << std::hex << indices_ptr << std::dec << ", deref'd: \n";
