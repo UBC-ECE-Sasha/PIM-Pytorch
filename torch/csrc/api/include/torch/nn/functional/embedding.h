@@ -85,10 +85,10 @@ inline Tensor embedding_bag(
     const Tensor& per_sample_weights,
     bool include_last_offset,
     c10::optional<int64_t> padding_idx,
+    int64_t num_of_tables,
+    int64_t dpu_set_ptr,
     bool lookup_mode,
-    bool use_dpu,
-    uint64_t num_of_tables,
-    uint64_t dpu_set_ptr) {
+    bool use_dpu) {
   auto input_ = input;
   auto offsets_ = offsets;
   auto per_sample_weights_ = per_sample_weights;
@@ -149,10 +149,10 @@ inline Tensor embedding_bag(
       per_sample_weights_,
       include_last_offset,
       padding_idx,
-      lookup_mode,
-      use_dpu,
       num_of_tables,
-      dpu_set_ptr));
+      dpu_set_ptr,
+      lookup_mode,
+      use_dpu));
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //     torch::embedding_bag(
@@ -181,7 +181,7 @@ inline Tensor embedding_bag(
 /// F::embedding_bag(input, weight, F::EmbeddingBagFuncOptions().mode(torch::kSum).offsets(offsets));
 /// ```
 // PIM: Force direct lookup() call
-inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, bool lookup_mode = false, bool use_dpu = false, uint64_t num_of_tables = 0, uint64_t dpu_set_ptr = 0) {
+inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool lookup_mode = false, bool use_dpu = false) {
   return detail::embedding_bag(
     input,
     weight,
@@ -194,10 +194,10 @@ inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const Emb
     options.per_sample_weights(),
     options.include_last_offset(),
     options.padding_idx(),
-    lookup_mode,
-    use_dpu,
     num_of_tables,
-    dpu_set_ptr);
+    dpu_set_ptr,
+    lookup_mode,
+    use_dpu);
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //   return detail::embedding_bag(

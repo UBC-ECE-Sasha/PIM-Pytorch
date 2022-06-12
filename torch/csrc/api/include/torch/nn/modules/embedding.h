@@ -119,7 +119,7 @@ class TORCH_API EmbeddingBagImpl : public torch::nn::Cloneable<EmbeddingBagImpl>
   // PIM: Force direct lookup() call
   // Tensor forward(const Tensor& input, const Tensor& offsets = {}, const Tensor& per_sample_weights = {});
   // void forward(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu);
-  Tensor forward(const Tensor& input, const Tensor& offsets = {}, const Tensor& per_sample_weights = {}, bool lookup_mode = false, bool use_dpu = false, uint64_t num_of_tables = 0, uint64_t dpu_set_ptr = 0);
+  Tensor forward(const Tensor& input, const Tensor& offsets = {}, const Tensor& per_sample_weights = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool lookup_mode = false, bool use_dpu = false);
   
  protected:
   FORWARD_HAS_DEFAULT_ARGS({1, AnyValue(Tensor())}, {2, AnyValue(Tensor())})
