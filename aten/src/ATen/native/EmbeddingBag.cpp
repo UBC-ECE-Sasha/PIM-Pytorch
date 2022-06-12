@@ -710,32 +710,50 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> _embedding_bag_cpu_impl(
 // embedding_bag wrapper to enforce contiguity in tensors other than `weight`.
 // This is created to save extra `.contiguous()` call in backward.
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
-void
-embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu) {
-  // // See [Note: hacky wrapper removal for optional tensor]
-  // c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
-  // const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
-  // int64_t padding_idx = -1;
+std::tuple<Tensor, Tensor, Tensor, Tensor>
+embedding_bag(const Tensor &weight, const Tensor &indices,
+              const Tensor &offsets, const bool scale_grad_by_freq,
+              const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
+              bool include_last_offset, c10::optional<int64_t> padding_idx_opt, bool lookup_mode, bool use_dpu, uint64_t num_of_tables, uint64_t dpu_set_ptr) {
+  (void) weight;
+  (void) indices;
+  (void) offsets;
+  (void) scale_grad_by_freq;
+  (void) mode;
+  (void) sparse;
+  (void) per_sample_weights_opt;
+  (void) include_last_offset;
+  (void) padding_idx_opt;
+  (void) lookup_mode;
+  (void) use_dpu;
+  (void) num_of_tables;
+  (void) dpu_set_ptr;
 
-  // if (padding_idx_opt.has_value()) {
-  //   auto num_embeddings = weight.size(0);
-  //   padding_idx = padding_idx_opt.value();
-  //   TORCH_CHECK(
-  //     (padding_idx >= -num_embeddings) && (padding_idx < num_embeddings),
-  //     "padding_idx must be within the number of embeddings, -", num_embeddings,
-  //     " through ", num_embeddings - 1, ", but got ", padding_idx);
-  //   padding_idx = maybe_wrap_dim(padding_idx, weight.size(0));
-  // }
-  // std::tuple<Tensor, Tensor, Tensor, Tensor> out;
-  // if (!weight.requires_grad()) {
-  //   out = at::_embedding_bag_forward_only(
-  //     weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
-  //     mode, sparse, per_sample_weights, include_last_offset, padding_idx);
-  // } else {
-  //   out = at::_embedding_bag(
-  //     weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
-  //     mode, sparse, per_sample_weights, include_last_offset, padding_idx);
-  // }
+  // See [Note: hacky wrapper removal for optional tensor]
+  c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
+  const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
+  int64_t padding_idx = -1;
+
+  if (padding_idx_opt.has_value()) {
+    auto num_embeddings = weight.size(0);
+    padding_idx = padding_idx_opt.value();
+    TORCH_CHECK(
+      (padding_idx >= -num_embeddings) && (padding_idx < num_embeddings),
+      "padding_idx must be within the number of embeddings, -", num_embeddings,
+      " through ", num_embeddings - 1, ", but got ", padding_idx);
+    padding_idx = maybe_wrap_dim(padding_idx, weight.size(0));
+  }
+  std::tuple<Tensor, Tensor, Tensor, Tensor> out;
+  if (!weight.requires_grad()) {
+    out = at::_embedding_bag_forward_only(
+      weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
+      mode, sparse, per_sample_weights, include_last_offset, padding_idx);
+  } else {
+    out = at::_embedding_bag(
+      weight, indices.contiguous(), offsets.contiguous(), scale_grad_by_freq,
+      mode, sparse, per_sample_weights, include_last_offset, padding_idx);
+  }
+  return out;
 
   // NOTE:
   // indices_ptr: pointer to an array of pointers, each pointer is an array of indices (uint32_t)
@@ -745,68 +763,72 @@ embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_p
   // final_results_ptr: pointer to an array of pointers, each pointer is an array of memory space that is used to store results of the lookup
   // num_of_tables: number of tables that needs to be processed
 
-  uint32_t** indices_ptr_typed = (uint32_t**) indices_ptr;
-  uint32_t** offsets_ptr_typed = (uint32_t**) offsets_ptr;
-  uint32_t* indices_len_ptr_typed = (uint32_t*) indices_len_ptr;
-  uint32_t* nr_batches_ptr_typed = (uint32_t*) nr_batches_ptr;
-  float** final_results_ptr_typed = (float**) final_results_ptr;
-  (void) lookup_mode;
-  (void) use_dpu;
+  // uint32_t** indices_ptr_typed = (uint32_t**) indices_ptr;
+  // uint32_t** offsets_ptr_typed = (uint32_t**) offsets_ptr;
+  // uint32_t* indices_len_ptr_typed = (uint32_t*) indices_len_ptr;
+  // uint32_t* nr_batches_ptr_typed = (uint32_t*) nr_batches_ptr;
+  // float** final_results_ptr_typed = (float**) final_results_ptr;
+  // (void) lookup_mode;
+  // (void) use_dpu;
 
-  // DEBUG: Check arguments
-  std::cout << "DEBUG (C++): lookup_mode: " << lookup_mode << std::endl;
-  std::cout << "DEBUG (C++): use_dpu: " << use_dpu << std::endl;
+  // // DEBUG: Check arguments
+  // std::cout << "DEBUG (C++): lookup_mode: " << lookup_mode << std::endl;
+  // std::cout << "DEBUG (C++): use_dpu: " << use_dpu << std::endl;
 
-  std::cout << "DEBUG (C++): BREAKDOWN TESTING: " << std::hex << static_cast<void*>(indices_ptr_typed) << ", " << static_cast<void*>(indices_ptr_typed[0]) << ", " << indices_ptr_typed[0][0] << std::dec << std::endl; 
+  // std::cout << "DEBUG (C++): BREAKDOWN TESTING: " << std::hex << static_cast<void*>(indices_ptr_typed) << ", " << static_cast<void*>(indices_ptr_typed[0]) << ", " << indices_ptr_typed[0][0] << std::dec << std::endl; 
 
-  std::cout << "DEBUG (C++): indices_ptr: " << std::hex << indices_ptr << std::dec << ", deref'd: \n";
-  for (uint64_t i = 0; i < num_of_tables; i++) {
-    std::cout << "Table " << i << ": \n[ ";
-    // Too much console pollution if the whole thing gets printed out, use first 10 to check
-    for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < indices_len_ptr_typed[i]; j++) {
-      std::cout << indices_ptr_typed[i][j] << ", ";
-    }
-    std::cout << "]\n";
-  }
+  // std::cout << "DEBUG (C++): indices_ptr: " << std::hex << indices_ptr << std::dec << ", deref'd: \n";
+  // for (uint64_t i = 0; i < num_of_tables; i++) {
+  //   std::cout << "Table " << i << ": \n[ ";
+  //   // Too much console pollution if the whole thing gets printed out, use first 10 to check
+  //   for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < indices_len_ptr_typed[i]; j++) {
+  //     std::cout << indices_ptr_typed[i][j] << ", ";
+  //   }
+  //   std::cout << "]\n";
+  // }
 
-  std::cout << "DEBUG (C++): offsets_ptr: " << std::hex << offsets_ptr << std::dec << ", deref'd: \n";
-  for (uint64_t i = 0; i < num_of_tables; i++) {
-    std::cout << "Table " << i << ": \n[ ";
-    // Too much console pollution if the whole thing gets printed out, use first 10 to check
-    for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < nr_batches_ptr_typed[i]; j++) {
-      std::cout << offsets_ptr_typed[i][j] << ", ";
-    }
-    std::cout << "]\n";
-  }
+  // std::cout << "DEBUG (C++): offsets_ptr: " << std::hex << offsets_ptr << std::dec << ", deref'd: \n";
+  // for (uint64_t i = 0; i < num_of_tables; i++) {
+  //   std::cout << "Table " << i << ": \n[ ";
+  //   // Too much console pollution if the whole thing gets printed out, use first 10 to check
+  //   for (uint64_t j = 0; j < 10; j++) { //for (uint64_t j = 0; j < nr_batches_ptr_typed[i]; j++) {
+  //     std::cout << offsets_ptr_typed[i][j] << ", ";
+  //   }
+  //   std::cout << "]\n";
+  // }
 
-  std::cout << "DEBUG (C++): indices_len_ptr: " << std::hex << indices_len_ptr << std::dec << ", deref'd: \n [ ";
-  for (uint64_t i = 0; i < num_of_tables; i++) {
-    std::cout << indices_len_ptr_typed[i] << ", ";
-  }
-  std::cout << "]\n";
+  // std::cout << "DEBUG (C++): indices_len_ptr: " << std::hex << indices_len_ptr << std::dec << ", deref'd: \n [ ";
+  // for (uint64_t i = 0; i < num_of_tables; i++) {
+  //   std::cout << indices_len_ptr_typed[i] << ", ";
+  // }
+  // std::cout << "]\n";
 
-  std::cout << "DEBUG (C++): nr_batches_ptr: " << std::hex << nr_batches_ptr << std::dec << ", deref'd: \n [ ";
-  for (uint64_t i = 0; i < num_of_tables; i++) {
-    std::cout << nr_batches_ptr_typed[i] << ", ";
-  }
-  std::cout << "]\n";
+  // std::cout << "DEBUG (C++): nr_batches_ptr: " << std::hex << nr_batches_ptr << std::dec << ", deref'd: \n [ ";
+  // for (uint64_t i = 0; i < num_of_tables; i++) {
+  //   std::cout << nr_batches_ptr_typed[i] << ", ";
+  // }
+  // std::cout << "]\n";
 
-  std::cout << "DEBUG (C++): final_results_ptr: " << std::hex << final_results_ptr << std::dec << ", deref'd: \n [ ";
-  for (uint64_t i = 0; i < num_of_tables; i++) {
-    std::cout << final_results_ptr_typed[i] << ", ";
-  }
-  std::cout << "]\n";
+  // std::cout << "DEBUG (C++): final_results_ptr: " << std::hex << final_results_ptr << std::dec << ", deref'd: \n [ ";
+  // for (uint64_t i = 0; i < num_of_tables; i++) {
+  //   std::cout << final_results_ptr_typed[i] << ", ";
+  // }
+  // std::cout << "]\n";
 
-  std::cout << "DEBUG (C++): num_of_tables: " << num_of_tables << "\n";
+  // std::cout << "DEBUG (C++): num_of_tables: " << num_of_tables << "\n";
 
-  lookup((uint32_t**) indices_ptr, (uint32_t**) offsets_ptr, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float**) final_results_ptr, (void*) dpu_set_ptr);  // Check if buildable first
+  // lookup((uint32_t**) indices_ptr, (uint32_t**) offsets_ptr, (uint32_t*)indices_len_ptr, (uint32_t*) nr_batches_ptr, (float**) final_results_ptr, (void*) dpu_set_ptr);  // Check if buildable first
 };
 
 // TEST
-void
-embedding_bag(int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t nr_batches_ptr, int64_t final_results_ptr, int64_t num_of_tables, int64_t dpu_set_ptr, bool lookup_mode, bool use_dpu) {
+std::tuple<Tensor, Tensor, Tensor, Tensor>
+embedding_bag(const Tensor &weight, const Tensor &indices,
+              const Tensor &offsets, const bool scale_grad_by_freq,
+              const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
+              bool include_last_offset, bool lookup_mode, bool use_dpu, int64_t num_of_tables, int64_t dpu_set_ptr) {
   // Wrap to uint64_t
-  embedding_bag((uint64_t) indices_ptr, (uint64_t) offsets_ptr, (uint64_t) indices_len_ptr, (uint64_t) nr_batches_ptr, (uint64_t) final_results_ptr, (uint64_t) num_of_tables, (uint64_t) dpu_set_ptr, lookup_mode, use_dpu);
+  return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
+      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, lookup_mode, use_dpu, (uint64_t) num_of_tables, (uint64_t) dpu_set_ptr);
 }
 
 // PIM: We removed padding_idx overload, so no need for this wrapper anymore

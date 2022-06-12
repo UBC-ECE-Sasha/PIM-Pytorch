@@ -132,40 +132,44 @@ void EmbeddingBagImpl::reset_parameters() {
   torch::nn::init::normal_(weight);
 }
 // PIM: Force direct lookup() call
-// torch::Tensor EmbeddingBagImpl::forward(const Tensor& input, const Tensor&
-// offsets, const Tensor& per_sample_weights) {
-void EmbeddingBagImpl::forward(
-    uint64_t indices_ptr,
-    uint64_t offsets_ptr,
-    uint64_t indices_len_ptr,
-    uint64_t nr_batches_ptr,
-    uint64_t final_results_ptr,
-    uint64_t num_of_tables,
-    uint64_t dpu_set_ptr,
-    bool lookup_mode,
-    bool use_dpu) {
+torch::Tensor EmbeddingBagImpl::forward(const Tensor& input, const Tensor& offsets, const Tensor& per_sample_weights, 
+bool lookup_mode, bool use_dpu, uint64_t num_of_tables, uint64_t dpu_set_ptr) {
+// void EmbeddingBagImpl::forward(
+//     uint64_t indices_ptr,
+//     uint64_t offsets_ptr,
+//     uint64_t indices_len_ptr,
+//     uint64_t nr_batches_ptr,
+//     uint64_t final_results_ptr,
+//     uint64_t num_of_tables,
+//     uint64_t dpu_set_ptr,
+//     bool lookup_mode,
+//     bool use_dpu) {
   return F::detail::embedding_bag(
       // PIM: Force direct lookup() call
-      // input,
-      // weight,
-      // offsets,
-      // options.max_norm(),
-      // options.norm_type(),
-      // options.scale_grad_by_freq(),
-      // options.mode(),
-      // options.sparse(),
-      // per_sample_weights,
-      // options.include_last_offset(),
-      // options.padding_idx());
-      indices_ptr,
-      offsets_ptr,
-      indices_len_ptr,
-      nr_batches_ptr,
-      final_results_ptr,
-      num_of_tables,
-      dpu_set_ptr,
+      input,
+      weight,
+      offsets,
+      options.max_norm(),
+      options.norm_type(),
+      options.scale_grad_by_freq(),
+      options.mode(),
+      options.sparse(),
+      per_sample_weights,
+      options.include_last_offset(),
+      options.padding_idx(),
       lookup_mode,
-      use_dpu);
+      use_dpu,
+      num_of_tables,
+      dpu_set_ptr);
+      // indices_ptr,
+      // offsets_ptr,
+      // indices_len_ptr,
+      // nr_batches_ptr,
+      // final_results_ptr,
+      // num_of_tables,
+      // dpu_set_ptr,
+      // lookup_mode,
+      // use_dpu);
 }
 
 void EmbeddingBagImpl::pretty_print(std::ostream& stream) const {
