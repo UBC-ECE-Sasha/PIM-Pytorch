@@ -29,11 +29,12 @@ using namespace dpu;
 extern "C" {
   #include "emb_host.h"
 }
-int32_t** indices;
-uint32_t** offsets;
-uint32_t* indices_len, nr_batches;
-bool lookup_first_run=true;
-int table_id=0;
+int32_t** indices_ptr_arr;
+uint32_t** offsets_ptr_arr;
+uint32_t* indices_len;
+uint32_t* nr_batches;
+bool lookup_first_run = true;
+int table_id = 0;
 
 namespace {
   const int MODE_SUM = 0;
@@ -720,33 +721,124 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, int64_t 
-dpu_set_ptr, bool lookup_mode, bool use_dpu) {
+dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
-  // if(use_dpu){
-  //   std::cout << "DEBUG: Test Pytorch Build" << std::endl;
-  //   if(lookup_mode){
-  //     // TODO: Use array conversion macro
-  //     if(lookup_first_run){
-  //       indices=(int32_t**)malloc(num_of_tables*sizeof(int32_t*));
-  //       offsets=(uint32_t**)malloc(num_of_tables*sizeof(uint32_t*));
-  //       indices_len=(uint32_t*)malloc(num_of_tables*sizeof(uint32_t));
-  //       nr_batches=(uint32_t*)malloc(num_of_tables*sizeof(uint32_t));
-  //       lookup_first_run=false;
-  //     }
-  //     indices[table_id]=(int32_t*)indices.data_ptr();
-  //     offsets[table_id]=(uint32_t*)offsets.data_ptr();
-  //     indices_len[table_id]=indices.size(0);
-  //     nr_batches[table_id]=indices.size(0);
-  //     table_id++;
-  //   }
-  //   else{
-  //     lookup((uint32_t**) indices, (uint32_t**) offsets, (uint32_t*)indices_len, 
-  //       (uint32_t*) nr_batches, (float**) final_results, (void*) dpu_set_ptr);  // Check if buildable first
-  //       table_id=0;
-  //       lookup_first_run=true;
-  //   }
-  // }
-  // else{
+  if (use_dpu) {
+    float** final_results = (float**) final_results_ptr;
+    std::cout << "DEBUG: Test Pytorch Build" << std::endl;
+    if (lookup_mode) {
+      if (lookup_first_run) {
+        // Create arrays to store pointers
+        indices_ptr_arr = (int32_t**) malloc(num_of_tables * sizeof(int32_t*));
+        offsets_ptr_arr = (uint32_t**) malloc(num_of_tables * sizeof(uint32_t*));
+        indices_len = (uint32_t*) malloc(num_of_tables * sizeof(uint32_t));
+        nr_batches = (uint32_t*) malloc(num_of_tables * sizeof(uint32_t));
+        lookup_first_run = false;
+      }
+      
+      // Extract C-Array pointers and store in array
+      AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "EXAMPLE", [&]() {
+        // Get size of tensors
+        // uint64_t weight_size = weight.numel();
+        uint64_t index_size = indices.numel();
+        uint64_t offsets_size = offsets.numel();
+
+        // Get pointer of tensor data
+        // auto* weight_ptr = weight.data_ptr<index_t>();
+        auto* index_ptr = indices.data_ptr<index_t>();
+        auto* offsets_ptr = offsets.data_ptr<index_t>();
+
+        // Cast pointer to C array type
+        // uint32_t* weight_casted = (uint32_t*) weight_ptr; // Do we need to save this?
+        indices_ptr_arr[table_id] = (int32_t*) (int32_t*) index_ptr;
+        offsets_ptr_arr[table_id] = (uint32_t*) offsets_ptr;
+        indices_len[table_id] = index_size;
+        nr_batches[table_id] = index_size;
+        table_id++;
+      });
+
+      // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
+      std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
+      std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
+
+      // Return empty Tensor for now
+      // Tensor emptyTest = at::empty(
+      // {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+      //   weight.sizes()[1]},
+      //   weight.options());
+
+      // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
+    }
+    else {
+      // Do lookup
+      // lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
+      //   (uint32_t*) nr_batches, (float**) final_results, (void*) dpu_set_ptr);  // Check if buildable first
+      // Check values in global pointers
+      for (int i = 0; i < num_of_tables; i++) {
+        // Print first 10 and last 10 indices
+        std::cout << "C++: Indices for table " << i << ": [ ";
+        for (int j = 0; j < 10; j++) {
+          std::cout << indices_ptr_arr[i][j] << ", ";
+        }
+        std::cout << " ... ";
+        for (int j = 10; j > 0; j--) {
+          std::cout << indices_ptr_arr[i][4094 - j] << ", ";
+        }
+        std::cout << "]\n";
+
+        // Print first 10 and last 10 offsets
+        std::cout << "C++: Offsets for table " << i << ": [ ";
+        for (int j = 0; j < 10; j++) {
+          std::cout << offsets_ptr_arr[i][j] << ", ";
+        }
+        std::cout << " ... ";
+        for (int j = 10; j > 0; j--) {
+          std::cout << offsets_ptr_arr[i][128 - j] << ", ";
+        }
+        std::cout << "]\n";
+      }
+      table_id = 0;
+      lookup_first_run = true;
+
+      // Free malloc'd memory
+      free(indices_ptr_arr);
+      free(offsets_ptr_arr);
+      free(indices_len);
+      free(nr_batches);
+
+      // // Return Tensor holding results in CPU implementation format, or return empty Tensor (Use final_results)
+      // Tensor emptyTest = at::empty(
+      // {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+      //   weight.sizes()[1]},
+      //   weight.options());
+
+      // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
+    }
+
+    // If we do return an empty Tensor for both cases, then just do it here:
+    Tensor emptyTest0 = at::empty(
+      {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+        weight.sizes()[1]},
+        weight.options());
+    
+    Tensor emptyTest1 = at::empty(
+      {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+        weight.sizes()[1]},
+        weight.options());
+
+    Tensor emptyTest2 = at::empty(
+      {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+        weight.sizes()[1]},
+        weight.options());
+    
+    Tensor emptyTest3 = at::empty(
+      {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+        weight.sizes()[1]},
+        weight.options());
+
+    return std::make_tuple(std::move(emptyTest0), std::move(emptyTest1), std::move(emptyTest2), std::move(emptyTest3));
+  }
+  else {
     c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
     const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;
     int64_t padding_idx = -1;
@@ -771,7 +863,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu) {
       mode, sparse, per_sample_weights, include_last_offset, padding_idx);
     }
     return out;
-  // }
+  }
 };
 
 // TEST
@@ -779,7 +871,7 @@ std::tuple<Tensor, Tensor, Tensor, Tensor>
 embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset, int64_t num_of_tables, int64_t dpu_set_ptr, bool lookup_mode, bool use_dpu) {
+              bool include_last_offset, int64_t num_of_tables, int64_t dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
   // Wrap to uint64_t
   return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
       mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, num_of_tables, dpu_set_ptr, lookup_mode, use_dpu);
@@ -822,9 +914,9 @@ _embedding_bag_forward_only_cpu(const Tensor &weight, const Tensor &indices,
 // See NOTE [ embedding_bag Native Functions ] in native_functions.yaml for details
 std::tuple<Tensor, Tensor, Tensor, Tensor>
 _embedding_bag_cpu(const Tensor &weight, const Tensor &indices,
-                  const Tensor &offsets, const bool scale_grad_by_freq,
-                  const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt, bool include_last_offset,
-                  int64_t padding_idx) {
+                  const Tensor &offsets, bool scale_grad_by_freq,
+                  int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt, bool include_last_offset,
+                  int64_t padding_idx ) {
   // See [Note: hacky wrapper removal for optional tensor]
   c10::MaybeOwned<Tensor> per_sample_weights_maybe_owned = at::borrow_from_optional_tensor(per_sample_weights_opt);
   const Tensor& per_sample_weights = *per_sample_weights_maybe_owned;

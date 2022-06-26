@@ -2070,7 +2070,8 @@ def embedding_bag(
     num_of_tables: int = 0,
     dpu_set_ptr: int = 0,
     lookup_mode: bool = False,
-    use_dpu: bool = False
+    use_dpu: bool = False, 
+    final_results_ptr: int = 0
 ) -> Tensor:
     r"""Computes sums, means or maxes of `bags` of embeddings, without instantiating the
     intermediate embeddings.
@@ -2236,10 +2237,10 @@ def embedding_bag(
             "per_sample_weights is only supported for mode='sum' "
             "(got mode='{}'). Please open a feature request on GitHub.".format(mode)
         )
-
     ret, _, _, _ = torch.embedding_bag(
-        weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx, num_of_tables, dpu_set_ptr, lookup_mode, use_dpu
+        weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx, num_of_tables, dpu_set_ptr, lookup_mode, use_dpu, final_results_ptr
     )
+    print(ret.type())
     return ret
     # torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables, dpu_set_ptr, lookup_mode, use_dpu)
 

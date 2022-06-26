@@ -88,7 +88,8 @@ inline Tensor embedding_bag(
     int64_t num_of_tables,
     int64_t dpu_set_ptr,
     bool lookup_mode,
-    bool use_dpu) {
+    bool use_dpu, 
+    int64_t final_results_ptr) {
   auto input_ = input;
   auto offsets_ = offsets;
   auto per_sample_weights_ = per_sample_weights;
@@ -152,7 +153,8 @@ inline Tensor embedding_bag(
       num_of_tables,
       dpu_set_ptr,
       lookup_mode,
-      use_dpu));
+      use_dpu,
+      final_results_ptr));
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //     torch::embedding_bag(
@@ -181,7 +183,7 @@ inline Tensor embedding_bag(
 /// F::embedding_bag(input, weight, F::EmbeddingBagFuncOptions().mode(torch::kSum).offsets(offsets));
 /// ```
 // PIM: Force direct lookup() call
-inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool lookup_mode = false, bool use_dpu = false) {
+inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool lookup_mode = false, bool use_dpu = false, int64_t final_results_ptr = 0) {
   return detail::embedding_bag(
     input,
     weight,
@@ -197,7 +199,8 @@ inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const Emb
     num_of_tables,
     dpu_set_ptr,
     lookup_mode,
-    use_dpu);
+    use_dpu,
+    final_results_ptr);
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //   return detail::embedding_bag(
