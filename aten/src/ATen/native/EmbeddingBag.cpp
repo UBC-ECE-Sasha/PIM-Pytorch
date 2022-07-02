@@ -740,8 +740,8 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "EXAMPLE", [&]() {
         // Get size of tensors
         // uint64_t weight_size = weight.numel();
-        uint64_t index_size = indices.numel();
-        uint64_t offsets_size = offsets.numel();
+        uint32_t index_size = indices.numel();
+        uint32_t offsets_size = offsets.numel();
 
         // Get pointer of tensor data
         // auto* weight_ptr = weight.data_ptr<index_t>();
@@ -750,10 +750,10 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
         // Cast pointer to C array type
         // uint32_t* weight_casted = (uint32_t*) weight_ptr; // Do we need to save this?
-        indices_ptr_arr[table_id] = (int32_t*) (int32_t*) index_ptr;
+        indices_ptr_arr[table_id] = (int32_t*) index_ptr;
         offsets_ptr_arr[table_id] = (uint32_t*) offsets_ptr;
         indices_len[table_id] = index_size;
-        nr_batches[table_id] = index_size;
+        nr_batches[table_id] = offsets_size;
         table_id++;
       });
 
@@ -770,19 +770,19 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
     }
     else {
-      // Do lookup
-      // lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
-      //   (uint32_t*) nr_batches, (float**) final_results, (void*) dpu_set_ptr);  // Check if buildable first
       // Check values in global pointers
       for (int i = 0; i < num_of_tables; i++) {
+        // Print num of Indicies and Offsets
+        std::cout << "C++: #Indices: " << indices_len[i] << ", #Offsets: " << nr_batches[i] << std::endl;
+
         // Print first 10 and last 10 indices
         std::cout << "C++: Indices for table " << i << ": [ ";
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < 9; j++) {
           std::cout << indices_ptr_arr[i][j] << ", ";
         }
         std::cout << " ... ";
         for (int j = 10; j > 0; j--) {
-          std::cout << indices_ptr_arr[i][4094 - j] << ", ";
+          std::cout << indices_ptr_arr[i][2048 - j] << ", ";
         }
         std::cout << "]\n";
 
@@ -793,10 +793,15 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
         }
         std::cout << " ... ";
         for (int j = 10; j > 0; j--) {
-          std::cout << offsets_ptr_arr[i][128 - j] << ", ";
+          std::cout << offsets_ptr_arr[i][64 - j] << ", ";
         }
         std::cout << "]\n";
       }
+
+      // Do lookup
+      lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
+        (uint32_t*) nr_batches, (float**) final_results, (void*) dpu_set_ptr);  // Check if buildable first
+      
       table_id = 0;
       lookup_first_run = true;
 
