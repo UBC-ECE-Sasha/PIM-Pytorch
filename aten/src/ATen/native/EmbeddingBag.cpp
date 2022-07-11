@@ -725,7 +725,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
-    std::cout << "DEBUG: Test Pytorch Build" << std::endl;
+    //std::cout << "DEBUG: Test Pytorch Build" << std::endl;
     if (lookup_mode) {
       if (lookup_first_run) {
         // Create arrays to store pointers
@@ -758,8 +758,8 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       });
 
       // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
-      std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
-      std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
+      //std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
+      //std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
 
       // Return empty Tensor for now
       // Tensor emptyTest = at::empty(
@@ -771,7 +771,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
     }
     else {
       // Check values in global pointers
-      for (int i = 0; i < num_of_tables; i++) {
+      /* for (int i = 0; i < num_of_tables; i++) {
         // Print num of Indicies and Offsets
         std::cout << "C++: #Indices: " << indices_len[i] << ", #Offsets: " << nr_batches[i] << std::endl;
 
@@ -796,7 +796,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
           std::cout << offsets_ptr_arr[i][64 - j] << ", ";
         }
         std::cout << "]\n";
-      }
+      } */
 
       // Do lookup
       lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
