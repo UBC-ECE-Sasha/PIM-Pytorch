@@ -874,10 +874,10 @@ endif()
 include_directories(BEFORE /home/upmem0016/jwong5/upmem-2021.3.0-Linux-x86_64/include/dpu)
 # PIM: Include DPU HOST Code
 # NOTE: CHANGE THIS TO RELATIVE/FULL PATH
-include_directories(BEFORE /home/upmem0016/jwong5/PIM-Embedding-Lookup/upmem/include)
-include_directories(BEFORE /home/upmem0016/jwong5/PIM-Embedding-Lookup/upmem/include/host/include)
-include_directories(BEFORE /home/upmem0016/jwong5/PIM-Embedding-Lookup/upmem/include/common/include)
-include_directories(BEFORE /home/upmem0016/jwong5/PIM-Embedding-Lookup/upmem/src)
+include_directories(BEFORE /home/upmem0016/niloo/new_project/PIM-Embedding-Lookup/upmem/include)
+include_directories(BEFORE /home/upmem0016/niloo/new_project/PIM-Embedding-Lookup/upmem/include/host/include)
+include_directories(BEFORE /home/upmem0016/niloo/new_project/PIM-Embedding-Lookup/upmem/include/common/include)
+include_directories(BEFORE /home/upmem0016/niloo/new_project/PIM-Embedding-Lookup/upmem/src)
 
 # Prefix path to Caffe2 headers.
 # If a directory containing installed Caffe2 headers was inadvertently
