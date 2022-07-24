@@ -723,6 +723,12 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, int64_t 
 dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
+  // Test env vars
+  std::cout << "NR_TABLES: " << NR_TABLES
+            << "\nNR_COLS: " << NR_COLS
+            << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
+            << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
+
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
     std::cout << "DEBUG: Test Pytorch Build" << std::endl;
