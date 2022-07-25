@@ -724,14 +724,14 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
 dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
   // Test env vars
-  std::cout << "NR_TABLES: " << NR_TABLES
-            << "\nNR_COLS: " << NR_COLS
-            << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
-            << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
+  // std::cout << "NR_TABLES: " << NR_TABLES
+  //           << "\nNR_COLS: " << NR_COLS
+  //           << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
+  //           << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
 
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
-    std::cout << "DEBUG: Test Pytorch Build" << std::endl;
+    // std::cout << "DEBUG: Test Pytorch Build" << std::endl;
     if (lookup_mode) {
       if (lookup_first_run) {
         // Create arrays to store pointers
@@ -763,9 +763,9 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
         table_id++;
       });
 
-      // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
-      std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
-      std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
+      // // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
+      // std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
+      // std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
 
       // Return empty Tensor for now
       // Tensor emptyTest = at::empty(
@@ -776,33 +776,33 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
     }
     else {
-      // Check values in global pointers
-      for (int i = 0; i < num_of_tables; i++) {
-        // Print num of Indicies and Offsets
-        std::cout << "C++: #Indices: " << indices_len[i] << ", #Offsets: " << nr_batches[i] << std::endl;
+      // // Check values in global pointers
+      // for (int i = 0; i < num_of_tables; i++) {
+      //   // Print num of Indicies and Offsets
+      //   std::cout << "C++: #Indices: " << indices_len[i] << ", #Offsets: " << nr_batches[i] << std::endl;
 
-        // Print first 10 and last 10 indices
-        std::cout << "C++: Indices for table " << i << ": [ ";
-        for (int j = 0; j < 9; j++) {
-          std::cout << indices_ptr_arr[i][j] << ", ";
-        }
-        std::cout << " ... ";
-        for (int j = 10; j > 0; j--) {
-          std::cout << indices_ptr_arr[i][2048 - j] << ", ";
-        }
-        std::cout << "]\n";
+      //   // Print first 10 and last 10 indices
+      //   std::cout << "C++: Indices for table " << i << ": [ ";
+      //   for (int j = 0; j < 9; j++) {
+      //     std::cout << indices_ptr_arr[i][j] << ", ";
+      //   }
+      //   std::cout << " ... ";
+      //   for (int j = 10; j > 0; j--) {
+      //     std::cout << indices_ptr_arr[i][2048 - j] << ", ";
+      //   }
+      //   std::cout << "]\n";
 
-        // Print first 10 and last 10 offsets
-        std::cout << "C++: Offsets for table " << i << ": [ ";
-        for (int j = 0; j < 10; j++) {
-          std::cout << offsets_ptr_arr[i][j] << ", ";
-        }
-        std::cout << " ... ";
-        for (int j = 10; j > 0; j--) {
-          std::cout << offsets_ptr_arr[i][64 - j] << ", ";
-        }
-        std::cout << "]\n";
-      }
+      //   // Print first 10 and last 10 offsets
+      //   std::cout << "C++: Offsets for table " << i << ": [ ";
+      //   for (int j = 0; j < 10; j++) {
+      //     std::cout << offsets_ptr_arr[i][j] << ", ";
+      //   }
+      //   std::cout << " ... ";
+      //   for (int j = 10; j > 0; j--) {
+      //     std::cout << offsets_ptr_arr[i][64 - j] << ", ";
+      //   }
+      //   std::cout << "]\n";
+      // }
 
       // Do lookup
       lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
