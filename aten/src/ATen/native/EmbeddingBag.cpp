@@ -805,19 +805,13 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       table_id = 0;
       lookup_first_run = true;
 
-      // Free malloc'd memory
-      free(indices_ptr_arr);
-      free(offsets_ptr_arr);
-      free(indices_len);
-      free(nr_batches);
+      // Return Tensor holding results in CPU implementation format, or return empty Tensor (Use final_results)
+      /* Tensor emptyTest = at::empty(
+      {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
+      weight.sizes()[1]},
+      weight.options());
 
-      // // Return Tensor holding results in CPU implementation format, or return empty Tensor (Use final_results)
-      // Tensor emptyTest = at::empty(
-      // {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
-      //   weight.sizes()[1]},
-      //   weight.options());
-
-      // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
+      return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest)); */
     }
 
     // If we do return an empty Tensor for both cases, then just do it here:
@@ -830,7 +824,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
         weight.sizes()[1]},
         weight.options());
-
+    
     Tensor emptyTest2 = at::empty(
       {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
         weight.sizes()[1]},
@@ -840,7 +834,16 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       {include_last_offset ? offsets.sizes()[0] - 1 : offsets.sizes()[0],
         weight.sizes()[1]},
         weight.options());
-
+      
+    if(use_dpu && !lookup_mode){
+      printf("before free\n");
+      free(indices_ptr_arr);
+      free(offsets_ptr_arr);
+      free(indices_len);
+      free(nr_batches);
+      printf("after free\n");
+    }
+    printf("before return\n");
     return std::make_tuple(std::move(emptyTest0), std::move(emptyTest1), std::move(emptyTest2), std::move(emptyTest3));
   }
   else {
