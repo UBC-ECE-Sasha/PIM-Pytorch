@@ -803,10 +803,10 @@ target_include_directories(torch_cpu PUBLIC "${UPMEM_HOME}/include/dpu")
 target_link_libraries(torch_cpu PUBLIC "${UPMEM_LIB}")
 
 # Setting random_env (See PIM-Embedding-Lookup/upmem/run.sh)
-add_compile_definitions(NR_TABLES=10)
-add_compile_definitions(NR_COLS=64)
-add_compile_definitions(MAX_NR_BATCHES=128)
-add_compile_definitions(NR_TASKLETS=14)
+add_compile_definitions(NR_TABLES=$ENV{NR_TABLES})
+add_compile_definitions(NR_COLS=$ENV{NR_COLS})
+add_compile_definitions(MAX_NR_BATCHES=$ENV{MAX_NR_BATCHES})
+add_compile_definitions(NR_TASKLETS=$ENV{NR_TASKLETS})
 
 # Link with DPU Host Code
 # NOTE: CHANGE THIS TO RELATIVE/FULL PATH
