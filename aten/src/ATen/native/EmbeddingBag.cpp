@@ -26,6 +26,10 @@
 #include <dpu>
 using namespace dpu;
 
+// PIM: Profiling
+#include <chrono>
+using namespace std::chrono;
+
 extern "C" {
   #include "emb_host.h"
 }
@@ -729,6 +733,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
   //           << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
   //           << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
 
+  auto start = high_resolution_clock::now();
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
     // std::cout << "DEBUG: Test Pytorch Build" << std::endl;
@@ -762,6 +767,11 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
         nr_batches[table_id] = offsets_size;
         table_id++;
       });
+
+      // PIM: Profiling
+      auto end = high_resolution_clock::now();
+      auto duration = duration_cast<microseconds>(end - start);
+      std::cout << "C++ Lookup mode = false latency: " << duration.count() << std::endl;
 
       // // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
       // std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
@@ -816,6 +826,11 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       free(offsets_ptr_arr);
       free(indices_len);
       free(nr_batches);
+
+      // PIM: Profiling
+      auto end = high_resolution_clock::now();
+      auto duration = duration_cast<microseconds>(end - start);
+      std::cout << "C++ Lookup mode = true latency: " << duration.count() << std::endl;
 
       // // Return Tensor holding results in CPU implementation format, or return empty Tensor (Use final_results)
       // Tensor emptyTest = at::empty(
