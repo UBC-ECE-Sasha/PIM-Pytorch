@@ -727,6 +727,19 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, int64_t 
 dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
+  // // Test numpy array
+  // float* testing = (float*) dpu_set_ptr;
+  // std::cout << "Test numpy passing: \n";
+  // for (int i = 0; i < 3; i++) {
+  //   std::cout << "[ ";
+  //   for (int j = 0; j < 10; j++) {
+  //     std::cout << testing[i * 10 + j] << ", ";
+  //   }
+  //   std::cout << "]\n";
+  // }
+
+  // std::abort();
+
   // Test env vars
   // std::cout << "NR_TABLES: " << NR_TABLES
   //           << "\nNR_COLS: " << NR_COLS
@@ -816,7 +829,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
       // Do lookup
       lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
-        (uint32_t*) nr_batches, (float**) final_results, (void*) dpu_set_ptr);  // Check if buildable first
+        (uint32_t*) nr_batches, final_results, (void*) dpu_set_ptr);  // Check if buildable first
       
       table_id = 0;
       lookup_first_run = true;
