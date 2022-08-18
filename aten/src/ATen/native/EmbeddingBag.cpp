@@ -740,7 +740,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
   // std::abort();
 
-  // Test env vars
+  // // Test env vars
   // std::cout << "NR_TABLES: " << NR_TABLES
   //           << "\nNR_COLS: " << NR_COLS
   //           << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
@@ -833,7 +833,7 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       
       table_id = 0;
       lookup_first_run = true;
-
+      
       // Free malloc'd memory
       free(indices_ptr_arr);
       free(offsets_ptr_arr);
