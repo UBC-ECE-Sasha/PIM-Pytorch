@@ -727,29 +727,15 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, int64_t 
 dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
 
-  // // Test numpy array
-  // float* testing = (float*) dpu_set_ptr;
-  // std::cout << "Test numpy passing: \n";
-  // for (int i = 0; i < 3; i++) {
-  //   std::cout << "[ ";
-  //   for (int j = 0; j < 10; j++) {
-  //     std::cout << testing[i * 10 + j] << ", ";
-  //   }
-  //   std::cout << "]\n";
-  // }
-
-  // std::abort();
-
   // // Test env vars
   // std::cout << "NR_TABLES: " << NR_TABLES
   //           << "\nNR_COLS: " << NR_COLS
   //           << "\nMAX_NR_BATCHES: " << MAX_NR_BATCHES
   //           << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
 
-  auto start = high_resolution_clock::now();
+  // auto start = high_resolution_clock::now();
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
-    // std::cout << "DEBUG: Test Pytorch Build" << std::endl;
     if (lookup_mode) {
       if (lookup_first_run) {
         // Create arrays to store pointers
@@ -763,17 +749,14 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       // Extract C-Array pointers and store in array
       AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "EXAMPLE", [&]() {
         // Get size of tensors
-        // uint64_t weight_size = weight.numel();
         uint32_t index_size = indices.numel();
         uint32_t offsets_size = offsets.numel();
 
         // Get pointer of tensor data
-        // auto* weight_ptr = weight.data_ptr<index_t>();
         auto* index_ptr = indices.data_ptr<index_t>();
         auto* offsets_ptr = offsets.data_ptr<index_t>();
 
         // Cast pointer to C array type
-        // uint32_t* weight_casted = (uint32_t*) weight_ptr; // Do we need to save this?
         indices_ptr_arr[table_id] = (int32_t*) index_ptr;
         offsets_ptr_arr[table_id] = (uint32_t*) offsets_ptr;
         indices_len[table_id] = index_size;
@@ -781,14 +764,10 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
         table_id++;
       });
 
-      // PIM: Profiling
-      auto end = high_resolution_clock::now();
-      auto duration = duration_cast<microseconds>(end - start);
-      std::cout << "C++ Lookup mode = false latency: " << duration.count() << std::endl;
-
-      // // TESTING: Confirm we can reaccess the pointers malloc'd in first lookup run
-      // std::cout << "C++ DEBUG: Test pointer values: indices: " << indices_ptr_arr << ", offsets: " << offsets_ptr_arr << ", indices_len" << indices_len << ", nr_batches" << nr_batches << std::endl;
-      // std::cout << "C++ DEBUG: Test flag and counter values: lookup_first_run:" << lookup_first_run << ", table_id" << table_id << std::endl;
+      // // PIM: Profiling
+      // auto end = high_resolution_clock::now();
+      // auto duration = duration_cast<microseconds>(end - start);
+      // std::cout << "C++ Lookup mode = false latency: " << duration.count() << std::endl;
 
       // Return empty Tensor for now
       // Tensor emptyTest = at::empty(
@@ -799,33 +778,34 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       // return std::make_tuple(std::move(emptyTest), std::move(emptyTest), std::move(emptyTest), std::move(emptyTest));
     }
     else {
-      // // Check values in global pointers
-      // for (int i = 0; i < num_of_tables; i++) {
-      //   // Print num of Indicies and Offsets
-      //   std::cout << "C++: #Indices: " << indices_len[i] << ", #Offsets: " << nr_batches[i] << std::endl;
+      
+      // //TEST
+      // // Create arrays to store pointers
+      // indices_ptr_arr = (int32_t**) malloc(num_of_tables * sizeof(int32_t*));
+      // offsets_ptr_arr = (uint32_t**) malloc(num_of_tables * sizeof(uint32_t*));
+      // indices_len = (uint32_t*) malloc(num_of_tables * sizeof(uint32_t));
+      // nr_batches = (uint32_t*) malloc(num_of_tables * sizeof(uint32_t));
 
-      //   // Print first 10 and last 10 indices
-      //   std::cout << "C++: Indices for table " << i << ": [ ";
-      //   for (int j = 0; j < 9; j++) {
-      //     std::cout << indices_ptr_arr[i][j] << ", ";
+      // AT_DISPATCH_INDEX_TYPES(offsets.scalar_type(), "EXAMPLE", [&]() {
+      //   // Get size of tensors
+      //   uint32_t index_size = indices.numel();
+      //   uint32_t offsets_size = offsets.numel();
+      //   // Get pointer of tensor data
+      //   auto* index_ptr = indices.data_ptr<index_t>();
+      //   auto* offsets_ptr = offsets.data_ptr<index_t>();
+      //   for (int i = 0; i < NR_TABLES; i++) {
+      //     indices_ptr_arr[i] = (int32_t*) ((uint64_t)index_ptr + i * MAX_NR_BATCHES * MAX_INDICES_PER_BATCH);
+      //     offsets_ptr_arr[i] = (uint32_t*) ((uint64_t)offsets_ptr + i * MAX_INDICES_PER_BATCH);
+      //     indices_len[i] = index_size;
+      //     nr_batches[i] = offsets_size;
       //   }
-      //   std::cout << " ... ";
-      //   for (int j = 10; j > 0; j--) {
-      //     std::cout << indices_ptr_arr[i][2048 - j] << ", ";
-      //   }
-      //   std::cout << "]\n";
+      // });
+      // // Check reformat
+      // std::cout << "C++: Check indices reformat: First batch [1] = " << indices_ptr_arr[0][1] << ", second batch [1] = " << indices_ptr_arr[1][1] << ", offsetted second batch [1] = " << indices_ptr_arr[0][1 + 4096] << "\n";
+      // std::cout << "C++: Check pointer diff: [1] - [0]: " << (uint64_t)indices_ptr_arr[1] - (uint64_t)indices_ptr_arr[0] << ", [2] - [1] = " << (uint64_t)indices_ptr_arr[2] - (uint64_t)indices_ptr_arr[1] << "\n";
+      // std::cout << "C++: Check offsets reformat: First batch [1] = " << offsets_ptr_arr[0][1] << ", second batch [1] = " << offsets_ptr_arr[1][1] << ", offsetted second batch [1] = " << offsets_ptr_arr[0][1 + 64] << "\n";
+      // std::cout << "C++: Check pointer diff: [1] - [0]: " << (uint64_t)offsets_ptr_arr[1] - (uint64_t)offsets_ptr_arr[0] << ", [2] - [1] = " << (uint64_t)offsets_ptr_arr[2] - (uint64_t)offsets_ptr_arr[1] << "\n";
 
-      //   // Print first 10 and last 10 offsets
-      //   std::cout << "C++: Offsets for table " << i << ": [ ";
-      //   for (int j = 0; j < 10; j++) {
-      //     std::cout << offsets_ptr_arr[i][j] << ", ";
-      //   }
-      //   std::cout << " ... ";
-      //   for (int j = 10; j > 0; j--) {
-      //     std::cout << offsets_ptr_arr[i][64 - j] << ", ";
-      //   }
-      //   std::cout << "]\n";
-      // }
 
       // Do lookup
       lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, 
@@ -840,10 +820,10 @@ dpu_set_ptr, bool lookup_mode, bool use_dpu, int64_t final_results_ptr) {
       free(indices_len);
       free(nr_batches);
 
-      // PIM: Profiling
-      auto end = high_resolution_clock::now();
-      auto duration = duration_cast<microseconds>(end - start);
-      std::cout << "C++ Lookup mode = true latency: " << duration.count() << std::endl;
+      // // PIM: Profiling
+      // auto end = high_resolution_clock::now();
+      // auto duration = duration_cast<microseconds>(end - start);
+      // std::cout << "C++ Lookup mode = true latency: " << duration.count() << std::endl;
 
       // // Return Tensor holding results in CPU implementation format, or return empty Tensor (Use final_results)
       // Tensor emptyTest = at::empty(

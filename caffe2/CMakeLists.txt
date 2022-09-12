@@ -807,6 +807,7 @@ add_compile_definitions(NR_TABLES=$ENV{NR_TABLES})
 add_compile_definitions(NR_COLS=$ENV{NR_COLS})
 add_compile_definitions(MAX_NR_BATCHES=$ENV{MAX_NR_BATCHES})
 add_compile_definitions(NR_TASKLETS=$ENV{NR_TASKLETS})
+add_compile_definitions(MAX_INDICES_PER_BATCH=$ENV{MAX_INDICES_PER_BATCH})
 
 # Link with DPU Host Code
 # NOTE: CHANGE THIS TO RELATIVE/FULL PATH
