@@ -734,7 +734,6 @@ dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64
   //           << "\nNR_TASKLETS: " << NR_TASKLETS << std::endl;
 
 
-
   // auto start = high_resolution_clock::now();
   if (use_dpu) {
     float** final_results = (float**) final_results_ptr;
