@@ -725,7 +725,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, int64_t 
-dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr) {
+dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr, int64_t latency_print) {
 
   // // Test env vars
   // std::cout << "NR_TABLES: " << NR_TABLES
@@ -748,7 +748,7 @@ dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64
 
 
     // Do lookup
-    lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, final_results, (void*) dpu_set_ptr);
+    lookup((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, final_results, (void*) dpu_set_ptr, latency_print);
 
     // If we do return an empty Tensor for both cases, then just do it here:
     Tensor emptyTest0 = at::empty(1);
@@ -809,10 +809,11 @@ std::tuple<Tensor, Tensor, Tensor, Tensor>
 embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
-              bool include_last_offset, int64_t num_of_tables, int64_t dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr) {
+              bool include_last_offset, int64_t num_of_tables, int64_t dpu_set_ptr, bool use_dpu, 
+              int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr, int64_t latency_print) {
   // Wrap to uint64_t
   return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
-      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr);
+      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, latency_print);
 }
 
 // PIM: We removed padding_idx overload, so no need for this wrapper anymore

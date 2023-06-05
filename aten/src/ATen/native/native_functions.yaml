@@ -1714,7 +1714,7 @@
 # PIM: Force direct lookup() call
 # - func: embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False) -> (Tensor, Tensor, Tensor, Tensor)
 # - func: embedding_bag(int indices_ptr, int offsets_ptr, int indices_len_ptr, int nr_batches_ptr, int final_results_ptr, int num_of_tables, int dpu_set_ptr, bool lookup_mode, bool use_dpu) -> ()
-- func: embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int num_of_tables=0, int dpu_set_ptr=0, bool use_dpu=False, int final_results_ptr=0, int indices_ptr=0, int offsets_ptr=0) -> (Tensor, Tensor, Tensor, Tensor)
+- func: embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int num_of_tables=0, int dpu_set_ptr=0, bool use_dpu=False, int final_results_ptr=0, int indices_ptr=0, int offsets_ptr=0, int latency_print=0) -> (Tensor, Tensor, Tensor, Tensor)
 
 # To keep backward and forward compatibility, and to avoid ambiguity with the
 # original signature above, scale_grad_by_freq, mode, sparse,
@@ -1722,7 +1722,7 @@
 # values. Once the original signature is removed, default values can be added.
 # PIM: Force direct lookup() call - We remove the padding_idx option
 # - func: embedding_bag.padding_idx(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, bool include_last_offset, int? padding_idx) -> (Tensor, Tensor, Tensor, Tensor)
-- func: embedding_bag.padding_idx(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, bool include_last_offset, int? padding_idx, int num_of_tables=0, int dpu_set_ptr=0, bool use_dpu=False, int final_results_ptr=0, int indices_ptr=0, int offsets_ptr=0) -> (Tensor, Tensor, Tensor, Tensor)
+- func: embedding_bag.padding_idx(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, bool include_last_offset, int? padding_idx, int num_of_tables=0, int dpu_set_ptr=0, bool use_dpu=False, int final_results_ptr=0, int indices_ptr=0, int offsets_ptr=0, int latency_print=0) -> (Tensor, Tensor, Tensor, Tensor)
 
 
 - func: _embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)

@@ -90,7 +90,8 @@ inline Tensor embedding_bag(
     bool use_dpu,
     int64_t final_results_ptr,
     int64_t indices_ptr,
-    int64_t offsets_ptr) {
+    int64_t offsets_ptr,
+    int64_t latency_print) {
   auto input_ = input;
   auto offsets_ = offsets;
   auto per_sample_weights_ = per_sample_weights;
@@ -156,7 +157,8 @@ inline Tensor embedding_bag(
       use_dpu,
       final_results_ptr,
       indices_ptr,
-      offsets_ptr));
+      offsets_ptr,
+      latency_print));
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //     torch::embedding_bag(
@@ -185,7 +187,7 @@ inline Tensor embedding_bag(
 /// F::embedding_bag(input, weight, F::EmbeddingBagFuncOptions().mode(torch::kSum).offsets(offsets));
 /// ```
 // PIM: Force direct lookup() call
-inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool use_dpu = false, int64_t final_results_ptr = 0, int64_t indices_ptr = 0, int64_t offsets_ptr = 0) {
+inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool use_dpu = false, int64_t final_results_ptr = 0, int64_t indices_ptr = 0, int64_t offsets_ptr = 0, int64_t latency_print = 0) {
   return detail::embedding_bag(
     input,
     weight,
@@ -203,7 +205,8 @@ inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const Emb
     use_dpu,
     final_results_ptr,
     indices_ptr,
-    offsets_ptr);
+    offsets_ptr,
+    latency_print);
 }
 // inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
 //   return detail::embedding_bag(

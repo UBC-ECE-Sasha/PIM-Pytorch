@@ -352,7 +352,7 @@ class EmbeddingBag(Module):
     # PIM: Force direct lookup() call
     # def forward(self, input: Tensor, offsets: Optional[Tensor] = None, per_sample_weights: Optional[Tensor] = None) -> Tensor:
     # def forward(self, indices_ptr: int, offsets_ptr: int, indices_len_ptr: int, nr_batches_ptr: int, final_results_ptr: int, num_of_tables: int, dpu_set_ptr: int, lookup_mode: bool, use_dpu: bool):
-    def forward(self, input: Tensor, offsets: Optional[Tensor] = None, per_sample_weights: Optional[Tensor] = None, num_of_tables: int = 0, dpu_set_ptr: int = 0, use_dpu: bool = False, final_results_ptr: int = 0, indices_ptr: int = 0, offsets_ptr: int = 0) -> Tensor:
+    def forward(self, input: Tensor, offsets: Optional[Tensor] = None, per_sample_weights: Optional[Tensor] = None, num_of_tables: int = 0, dpu_set_ptr: int = 0, use_dpu: bool = False, final_results_ptr: int = 0, indices_ptr: int = 0, offsets_ptr: int = 0, latency_print: int = 0) -> Tensor:
         """Forward pass of EmbeddingBag.
 
         Args:
@@ -394,7 +394,7 @@ class EmbeddingBag(Module):
                                self.max_norm, self.norm_type,
                                self.scale_grad_by_freq, self.mode, self.sparse,
                                per_sample_weights, self.include_last_offset,
-                               self.padding_idx, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr)
+                               self.padding_idx, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, latency_print)
 
     def extra_repr(self) -> str:
         s = '{num_embeddings}, {embedding_dim}'

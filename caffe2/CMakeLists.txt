@@ -811,7 +811,7 @@ add_compile_definitions(MAX_INDICES_PER_BATCH=$ENV{MAX_INDICES_PER_BATCH})
 
 # Link with DPU Host Code
 # NOTE: CHANGE THIS TO RELATIVE/FULL PATH
-set(DPU_HOST_DIR /home/upmem0016/jwong5/PIM-Embedding-Lookup/upmem)
+set(DPU_HOST_DIR $ENV{DPU_IMPL_PATH})
 # find_library(DPU_HOST_LIB NAMES emb_host emb_host.c HINTS ${DPU_HOST_DIR}/build/release;${DPU_HOST_DIR}/src)
 # target_include_directories(torch_cpu PUBLIC "${DPU_HOST_DIR}/include/host/include;${DPU_HOST_DIR}/include;${DPU_HOST_DIR}/include/common/include")
 # target_sources(torch_cpu PUBLIC "${DPU_HOST_DIR}/src/emb_host.c")
