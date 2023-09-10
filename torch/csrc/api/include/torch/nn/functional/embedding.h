@@ -72,6 +72,7 @@ inline Tensor embedding(const Tensor& input, const Tensor& weight, const Embeddi
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace detail {
+// PIM: Force direct lookup() call
 inline Tensor embedding_bag(
     const Tensor& input,
     const Tensor& weight,
@@ -83,7 +84,14 @@ inline Tensor embedding_bag(
     bool sparse,
     const Tensor& per_sample_weights,
     bool include_last_offset,
-    c10::optional<int64_t> padding_idx) {
+    c10::optional<int64_t> padding_idx,
+    int64_t num_of_tables,
+    int64_t dpu_set_ptr,
+    bool use_dpu,
+    int64_t final_results_ptr,
+    int64_t indices_ptr,
+    int64_t offsets_ptr,
+    int64_t latency_print) {
   auto input_ = input;
   auto offsets_ = offsets;
   auto per_sample_weights_ = per_sample_weights;
@@ -143,8 +151,27 @@ inline Tensor embedding_bag(
       sparse,
       per_sample_weights_,
       include_last_offset,
-      padding_idx));
+      padding_idx,
+      num_of_tables,
+      dpu_set_ptr,
+      use_dpu,
+      final_results_ptr,
+      indices_ptr,
+      offsets_ptr,
+      latency_print));
 }
+// inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
+//     torch::embedding_bag(
+//       indices_ptr,
+//       offsets_ptr,
+//       indices_len_ptr,
+//       nr_batches_ptr,
+//       final_results_ptr,
+//       num_of_tables,
+//       dpu_set_ptr,
+//       lookup_mode,
+//       use_dpu);
+// }
 } // namespace detail
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
@@ -159,7 +186,8 @@ inline Tensor embedding_bag(
 /// namespace F = torch::nn::functional;
 /// F::embedding_bag(input, weight, F::EmbeddingBagFuncOptions().mode(torch::kSum).offsets(offsets));
 /// ```
-inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}) {
+// PIM: Force direct lookup() call
+inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const EmbeddingBagFuncOptions& options = {}, int64_t num_of_tables = 0, int64_t dpu_set_ptr = 0, bool use_dpu = false, int64_t final_results_ptr = 0, int64_t indices_ptr = 0, int64_t offsets_ptr = 0, int64_t latency_print = 0) {
   return detail::embedding_bag(
     input,
     weight,
@@ -171,8 +199,27 @@ inline Tensor embedding_bag(const Tensor& input, const Tensor& weight, const Emb
     options.sparse(),
     options.per_sample_weights(),
     options.include_last_offset(),
-    options.padding_idx());
+    options.padding_idx(),
+    num_of_tables,
+    dpu_set_ptr,
+    use_dpu,
+    final_results_ptr,
+    indices_ptr,
+    offsets_ptr,
+    latency_print);
 }
+// inline void embedding_bag(uint64_t indices_ptr, uint64_t offsets_ptr, uint64_t indices_len_ptr, uint64_t nr_batches_ptr, uint64_t final_results_ptr, uint64_t num_of_tables, uint64_t dpu_set_ptr, bool lookup_mode, bool use_dpu){
+//   return detail::embedding_bag(
+//     indices_ptr,
+//     offsets_ptr,
+//     indices_len_ptr,
+//     nr_batches_ptr,
+//     final_results_ptr,
+//     num_of_tables,
+//     dpu_set_ptr,
+//     lookup_mode,
+//     use_dpu);
+// }
 
 } // namespace functional
 } // namespace nn

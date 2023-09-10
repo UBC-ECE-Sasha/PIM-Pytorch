@@ -869,6 +869,16 @@ if(NOT APPLE AND UNIX)
   list(APPEND Caffe2_DEPENDENCY_LIBS dl)
 endif()
 
+# PIM: Include UPMEM SDK
+# NOTE: CHANGE THIS TO RELATIVE/FULL PATH
+include_directories(BEFORE $ENV{SDK_PATH})
+# PIM: Include DPU HOST Code
+# NOTE: CHANGE THIS TO RELATIVE/FULL PATH
+include_directories(BEFORE $ENV{DPU_IMPL_PATH}/include)
+include_directories(BEFORE $ENV{DPU_IMPL_PATH}/include/host/include)
+include_directories(BEFORE $ENV{DPU_IMPL_PATH}/include/common/include)
+include_directories(BEFORE $ENV{DPU_IMPL_PATH}/src)
+
 # Prefix path to Caffe2 headers.
 # If a directory containing installed Caffe2 headers was inadvertently
 # added to the list of include directories, prefixing

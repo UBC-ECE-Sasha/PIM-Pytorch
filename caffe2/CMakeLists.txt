@@ -795,6 +795,29 @@ if(HAVE_SOVERSION)
 endif()
 torch_compile_options(torch_cpu)  # see cmake/public/utils.cmake
 
+########################################### PIM ###########################################
+# Link with UPMEM SDK
+set(UPMEM_HOME $ENV{UPMEM_HOME})
+find_library(UPMEM_LIB NAMES dpu dpu_log.h dpu_log dpu.h HINTS ${UPMEM_HOME}/lib)
+target_include_directories(torch_cpu PUBLIC "${UPMEM_HOME}/include/dpu")
+target_link_libraries(torch_cpu PUBLIC "${UPMEM_LIB}")
+
+# Setting random_env (See PIM-Embedding-Lookup/upmem/run.sh)
+add_compile_definitions(NR_TABLES=$ENV{NR_TABLES})
+add_compile_definitions(NR_COLS=$ENV{NR_COLS})
+add_compile_definitions(MAX_NR_BATCHES=$ENV{MAX_NR_BATCHES})
+add_compile_definitions(NR_TASKLETS=$ENV{NR_TASKLETS})
+add_compile_definitions(MAX_INDICES_PER_BATCH=$ENV{MAX_INDICES_PER_BATCH})
+
+# Link with DPU Host Code
+# NOTE: CHANGE THIS TO RELATIVE/FULL PATH
+set(DPU_HOST_DIR $ENV{DPU_IMPL_PATH})
+# find_library(DPU_HOST_LIB NAMES emb_host emb_host.c HINTS ${DPU_HOST_DIR}/build/release;${DPU_HOST_DIR}/src)
+# target_include_directories(torch_cpu PUBLIC "${DPU_HOST_DIR}/include/host/include;${DPU_HOST_DIR}/include;${DPU_HOST_DIR}/include/common/include")
+# target_sources(torch_cpu PUBLIC "${DPU_HOST_DIR}/src/emb_host.c")
+
+###########################################################################################
+
 
 if(CMAKE_COMPILER_IS_GNUCXX AND BUILD_LIBTORCH_CPU_WITH_DEBUG)
   # To enable debug fission we need to build libtorch_cpu with debug info on,
