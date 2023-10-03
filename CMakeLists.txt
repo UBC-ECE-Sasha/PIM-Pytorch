@@ -869,6 +869,8 @@ if(NOT APPLE AND UNIX)
   list(APPEND Caffe2_DEPENDENCY_LIBS dl)
 endif()
 
+# PIM: Fix libpython3.7m missing
+link_directories($ENV{PY7M_PATH})
 # PIM: Include UPMEM SDK
 # NOTE: CHANGE THIS TO RELATIVE/FULL PATH
 include_directories(BEFORE $ENV{SDK_PATH})

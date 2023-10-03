@@ -2073,6 +2073,8 @@ def embedding_bag(
     final_results_ptr: int = 0, 
     indices_ptr: int = 0, 
     offsets_ptr: int = 0,
+    indices_len_ptr: int = 0,
+    offsets_len_ptr: int = 0,
     latency_print: int = 0,
 ) -> Tensor:
     r"""Computes sums, means or maxes of `bags` of embeddings, without instantiating the
@@ -2240,7 +2242,7 @@ def embedding_bag(
             "(got mode='{}'). Please open a feature request on GitHub.".format(mode)
         )
     ret, _, _, _ = torch.embedding_bag(
-        weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, latency_print
+        weight, input, offsets, scale_grad_by_freq, mode_enum, sparse, per_sample_weights, include_last_offset, padding_idx, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, indices_len_ptr, offsets_len_ptr, latency_print
     )
     return ret
     # torch.embedding_bag(indices_ptr, offsets_ptr, indices_len_ptr, nr_batches_ptr, final_results_ptr, num_of_tables, dpu_set_ptr, lookup_mode, use_dpu)
