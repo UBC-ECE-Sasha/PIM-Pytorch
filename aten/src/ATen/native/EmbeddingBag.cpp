@@ -726,7 +726,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, c10::optional<int64_t> padding_idx_opt, int64_t num_of_tables, 
               int64_t dpu_set_ptr, bool use_dpu, int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr, 
-              int64_t indices_len_ptr, int64_t offsets_len_ptr, int64_t latency_print) {
+              int64_t indices_len_ptr, int64_t offsets_len_ptr, int64_t latency_print, int64_t nr_cols_ptr) {
 
   // // Test env vars
   // std::cout << "NR_TABLES: " << NR_TABLES
@@ -742,6 +742,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
     uint32_t **offsets_ptr_arr = (uint32_t**) offsets_ptr;
     uint32_t *indices_len = (uint32_t*) indices_len_ptr;
     uint32_t *offsets_len = (uint32_t*) offsets_len_ptr;
+    uint32_t *nr_cols = (uint32_t*) nr_cols_ptr;
 
     // Check reformat
     // std::cout << "C++: indices_ptr_arr[0][0] = " << indices_ptr_arr[0][0] << ", indices_ptr_arr[2][0] = " << indices_ptr_arr[2][0] << "\n";
@@ -752,7 +753,7 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
 
     // Do lookup
     lookup_sg((uint32_t**) indices_ptr_arr, (uint32_t**) offsets_ptr_arr, (uint32_t*) indices_len, (uint32_t*) offsets_len, 
-            num_of_tables, final_results, (void*) dpu_set_ptr, latency_print);
+            num_of_tables, final_results, (void*) dpu_set_ptr, latency_print, nr_cols);
 
     // If we do return an empty Tensor for both cases, then just do it here:
     Tensor emptyTest0 = at::empty(1);
@@ -814,10 +815,10 @@ embedding_bag(const Tensor &weight, const Tensor &indices,
               const Tensor &offsets, const bool scale_grad_by_freq,
               const int64_t mode, bool sparse, const c10::optional<Tensor>& per_sample_weights_opt,
               bool include_last_offset, int64_t num_of_tables, int64_t dpu_set_ptr, bool use_dpu, 
-              int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t offsets_len_ptr, int64_t latency_print) {
+              int64_t final_results_ptr, int64_t indices_ptr, int64_t offsets_ptr, int64_t indices_len_ptr, int64_t offsets_len_ptr, int64_t latency_print, int64_t nr_cols_ptr) {
   // Wrap to uint64_t
   return at::native::embedding_bag(weight, indices, offsets, scale_grad_by_freq,
-      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, indices_len_ptr, offsets_len_ptr, latency_print);
+      mode, sparse, per_sample_weights_opt, include_last_offset, c10::nullopt, num_of_tables, dpu_set_ptr, use_dpu, final_results_ptr, indices_ptr, offsets_ptr, indices_len_ptr, offsets_len_ptr, latency_print, nr_cols_ptr);
 }
 
 // PIM: We removed padding_idx overload, so no need for this wrapper anymore

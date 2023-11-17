@@ -1,6 +1,5 @@
 import tensorboard
 from setuptools import distutils
-
 LooseVersion = distutils.version.LooseVersion
 
 if not hasattr(tensorboard, '__version__') or LooseVersion(tensorboard.__version__) < LooseVersion('1.15'):
